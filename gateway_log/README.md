@@ -1,6 +1,5 @@
-# gateway_log — 수연 파트 (6. LLM Gateway + 7. Log)
+# gateway_log (6. LLM Gateway + 7. Log)
 
-이 폴더가 **수연이 맡은 두 컴포넌트(6·7)의 실제 구현물**이다.
 설계 근거: `../SANITY_6_7_설계명세_LLMGateway_Log.md` (v1.1).
 
 ---
