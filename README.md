@@ -1,15 +1,14 @@
 # SANITY
 
-**S**ecurity **A**gent for **N**etworked **I**ntelligent unmanned s**Y**stems — 무인이동체(UxV)를 대상으로
-**위협모델링 → 자율 공격(PoV) → 자율 방어(패치·검증) → 제출**을 수행하는 에이전트 기반 사이버 추론 시스템(CRS).
+무인이동체(UxV)를 대상으로 **위협모델링 → 자율 공격(PoV) → 자율 방어(패치·검증) → 제출**을 수행하는 에이전트 기반 사이버 추론 시스템(CRS).
 
-대상 예선 시나리오: 클라우드에 배포된 라이브 시뮬레이터 **DVD(Damn Vulnerable Drone = ArduPilot SITL/MAVLink)**.
+예선 시나리오: 클라우드에 배포된 라이브 시뮬레이터 **DVD(Damn Vulnerable Drone = ArduPilot SITL/MAVLink)**.
 설계는 AIxCC 결승 **ATLANTIS**([Team-Atlanta/aixcc-afc-atlantis](https://github.com/Team-Atlanta/aixcc-afc-atlantis))의
 CRS 구조와 DefenseWeaver(위협모델링)를 참고했다.
 
 ---
 
-## 무엇을 하나
+## Components
 
 1. **위협모델링(1)** — 시스템 모델(OpenXSAM++ DFD)을 받아 RAG(ATT&CK/SPARTA/CVE/CWE) grounding 위에서 AND/OR **공격트리**를 생성.
 2. **시나리오 관리(2)** — 트리를 실행 경로로 분해하고 공격/방어 에이전트를 오케스트레이션(트리당 1 인스턴스).
