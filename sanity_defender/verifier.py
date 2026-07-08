@@ -23,7 +23,7 @@ def verify(s: dict, ts, log) -> dict:
                     "pov_ref": pov.get("pov_id"), "patch_ref": s.get("patch_ref")}))
         g_evd = bool(ev.get("bundle_ref"))
         # compare_baseline: 6 게이트를 넘겨 순수 AND 판정(§00-8.2)
-        cmp = _await(ts.diag("compare_baseline", {"workspace_root": ws,
+        _okc, cmp = _await(ts.sig("compare_baseline", {"workspace_root": ws,
                      "baseline_pov_reproduces": g_base, "patched_pov_blocked": g_patch_blocked,
                      "patched_build_success": g_build, "regression_tests_pass": g_reg,
                      "no_new_sanitizer_finding_on_replay": g_san, "evidence_bundle_complete": g_evd}))

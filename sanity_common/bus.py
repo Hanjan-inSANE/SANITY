@@ -19,7 +19,10 @@ class Bus:
         """(msg_id, obj) 무한 이터레이터. 호출측이 처리 후 ack(stream, group, msg_id)."""
         self.ensure_group(stream, group)
         while True:
-            resp = self.r.xreadgroup(group, consumer, {stream: ">"}, count=count, block=block_ms)
+            try:
+                resp = self.r.xreadgroup(group, consumer, {stream: ">"}, count=count, block=block_ms)
+            except (redis.exceptions.TimeoutError, redis.exceptions.ConnectionError):
+                continue
             if not resp: continue
             for _s, msgs in resp:
                 for msg_id, fields in msgs:

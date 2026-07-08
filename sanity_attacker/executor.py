@@ -27,7 +27,7 @@ def run_exploit(s: dict, ts, log) -> dict:
             _await(ts.diag("build_harness", {"workspace_root": ws, "harness_path": s["surface"]["harness"], "trace_id": tid}))
             _await(ts.diag("start_fuzz", {"workspace_root": ws, "tool_id":"aflpp", "target_cmd": target_cmd,
                     "seeds_dir": _seeds_dir(ws), "output_dir": fuzz_out, "timeout_sec": _fuzz_budget(s), "trace_id": tid}))
-            find = _await(ts.diag("collect_findings", {"workspace_root": ws, "fuzz_output_dir": fuzz_out, "trace_id": tid}))
+            _okf, find = _await(ts.sig("collect_findings", {"workspace_root": ws, "fuzz_output_dir": fuzz_out, "trace_id": tid}))
             input_ref = find.get("crash_report_ref") if find.get("crash_count", 0) > 0 else None
         input_ref = input_ref or s["seed_ref"]                       # 퍼즈 크래시 없으면 LLM seed로 직접 재현
         _okr, rep = _await(ts.sig("reproduce_pov", {"workspace_root": ws, "target_cmd": target_cmd,

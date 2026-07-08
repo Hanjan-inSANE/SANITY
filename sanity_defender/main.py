@@ -20,7 +20,7 @@ def run(scope_id: str) -> None:               # 동기(§00-2.1)
         init = DefenderState(
             attack_context=p["attack_context"], budget=p["budget"], trace_id=p["trace_id"],
             scope_id=scope_id, tree_id=p["tree_id"], gateway_model=p["gateway_model"],
-            workspace_root=p["workspace_root"], mav_endpoint=p["mav_endpoint"],  # Attacker와 동일 workspace
+            workspace_root=p["workspace_root"], mav_endpoint=p["mav_endpoint"], gateway_url=p["gateway_url"],  # Attacker와 동일 workspace
             max_retry=p["max_retry"], retries=0)
         build_graph(gw, ts, state, bus, log).invoke(init)  # 동기 LangGraph
         bus.ack(stream, f"g:defender:{scope_id}", msg_id)

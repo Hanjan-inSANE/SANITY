@@ -27,7 +27,7 @@ class Allocator:
         grant.virtual_key = self._issue_key(grant)           # → LiteLLM /key/generate (§00-7.3); 키를 grant에 기입
         ctx = self._compromise_ctx(path)                     # DM-4 선행 침해 상태
         # Allocator가 workspace 소유(FR-SR-CONCUR-04). 실제 create_workspace는 target 개념 없음(§00-8.2).
-        ws = _await(self.ts.diag("create_workspace", {"workspace_id": scope_id}))
+        ws = _await(self.ts.diag("create_workspace", {"workspace_id": scope_id.replace(":","_").replace("/","_")}))
         workspace_root = ws["workspace_root"]                # 공유 볼륨 경로 — 이후 모든 도구 호출의 첫 인자
         payload = {"node": node, "compromise_ctx": ctx.model_dump(),
                    "budget": grant.model_dump(), "workspace_root": workspace_root,
@@ -104,7 +104,8 @@ class Allocator:
         role ∈ {"attacker","defender"} → 이미지 sanity_attacker / sanity_defender.
         MUST: 로그 공유 볼륨(sanity-logs)을 마운트해야 동적 컨테이너 로그가 유실되지 않는다(FR-IF-7)."""
         import docker
-        docker.from_env().containers.run(
+        _cli = docker.from_env()
+        _c = _cli.containers.run(
             image=f"sanity_{role}:latest", detach=True, network="control",
             environment={"SANITY_SCOPE_ID": scope_id,
                          "SANITY_LOG_DIR": "/logs",                 # LogWriter 출력 위치(§00-9)
@@ -113,7 +114,11 @@ class Allocator:
                          "REDIS_URL_STATE": self.cfg.redis_url_state},
             volumes={"sanity-logs": {"bind": "/logs", "mode": "rw"},        # 로그 공유 볼륨
                      "toolset-ws": {"bind": "/workspaces", "mode": "rw"}},  # Toolset workspace 공유(§00-8.1)
-            name=f"{role}-{scope_id.replace(':','_')}", remove=True)
+            name=f"{role}-{scope_id.replace(':','_').replace('/','_')}", remove=True)
+        try:
+            _cli.networks.get("target").connect(_c)
+        except Exception:
+            pass
     def _force_fail(self, scope_id: str) -> None:                 # wall-clock 만료 시(FR-SR-BUDGET-01)
         self.bus.publish(f"sanity:status:{self.tree_id}",
             {"ts":0,"trace_id":scope_id,"component":"2.2","scope_id":scope_id,

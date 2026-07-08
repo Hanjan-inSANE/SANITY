@@ -228,3 +228,8 @@ def _extract_json(text: str) -> Any:
     if e > s:
         t = t[s:e + 1]
     for cand in (t, re.sub(r",(\s*[}\]])", r"\1", t)):   # 뒤따라오는 쉼표 제거 후 재시도
+        try:
+            return json.loads(cand)
+        except Exception:
+            continue
+    raise ValueError("JSON parse failed")

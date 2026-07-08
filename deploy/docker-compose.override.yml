@@ -1,0 +1,39 @@
+services:
+  gateway:
+    environment:
+      OLLAMA_CLOUD_BASE_URL: ${OLLAMA_CLOUD_BASE_URL:-https://ollama.com/v1}
+      OLLAMA_CLOUD_API_KEY: ${OLLAMA_CLOUD_API_KEY:-}
+  scenario-manager:
+    volumes:
+      - "submissions:/submissions"
+  viewer:
+    image: python:3.11-slim
+    command: ["python3", "/app/tools/viewer.py"]
+    ports: ["8090:8090"]
+    environment:
+      SANITY_LOG_DIR: /logs
+      SANITY_SUB_DIR: /submissions
+    volumes:
+      - "sanity-logs:/logs:ro"
+      - "submissions:/submissions:ro"
+      - "../tools:/app/tools:ro"
+    networks: [control]
+  control-ui:
+    image: sanity-scenario-manager
+    network_mode: host
+    command: ["python3", "/app/tools/control.py"]
+    environment:
+      SANITY_LOG_DIR: /logs
+      REDIS_URL_STATE: redis://127.0.0.1:6379/1
+      REDIS_URL_BUS: redis://127.0.0.1:6379/0
+      LITELLM_API_BASE: http://127.0.0.1:4000
+      SANITY_RAG_URL: ${SANITY_RAG_URL:-http://100.95.158.13:9843}
+      SANITY_LITELLM_MASTER_KEY: ${SANITY_LITELLM_MASTER_KEY}
+      SANITY_CONTROL_PORT: "8092"
+    volumes:
+      - "sanity-logs:/logs"
+      - "../tools:/app/tools:ro"
+      - "../sanity_infra:/app/sanity_infra:ro"
+volumes:
+  submissions:
+    name: submissions

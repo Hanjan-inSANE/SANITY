@@ -8,6 +8,7 @@ from .manager import ScenarioManager
 
 def run() -> None:                                            # 동기(§00-2.1)
     cfg = load_config(); bus = Bus(cfg.redis_url_bus); state = State(cfg.redis_url_state)
+    bus.ensure_group("sanity:tree:inbox", "g:scenario-manager")
     bus.reclaim("sanity:tree:inbox", "g:scenario-manager", "sm-main")   # 재기동 회수(FR-SR-DEPLOY-02)
     running: dict[str, threading.Thread] = {}
     for msg_id, obj in bus.consume("sanity:tree:inbox", "g:scenario-manager", "sm-main"):

@@ -9,6 +9,7 @@ class DefenderState(TypedDict, total=False):
     attack_context: dict; budget: dict; trace_id: str; scope_id: str; tree_id: str
     gateway_model: str; max_retry: int; retries: int
     workspace_root: str; mav_endpoint: str        # Attacker와 동일 workspace(crash) + 방어검증 SITL(logic)
+    gateway_url: str; _pov: dict; _target_files: list   # 런타임 내부 채널(필수 선언)
     # 4.1 산출
     attack_class: str            # "crash" | "logic"  ← select_defense가 PoV.tool kind로 파생(§00-3.1)
     defense_kind: str            # "source_patch" | "config_harden"
