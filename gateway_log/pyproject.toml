@@ -1,0 +1,15 @@
+# gateway_log — 6. LLM Gateway 클라이언트(sanity_llm) + 7. Log(sanity_log) 패키징.
+# 모노레포에서 editable 설치:  pip install -e ./gateway_log
+# → 이후 어디서든 `import sanity_llm`, `import sanity_log` 가능(SANITY_IMPL_GUIDE 00 §1 레이아웃과 정합).
+[project]
+name = "sanity-gateway-log"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = ["openai>=1.30", "requests>=2.31"]   # 클라이언트는 openai(호환), 예산발급은 requests
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["sanity_llm*", "sanity_log*"]

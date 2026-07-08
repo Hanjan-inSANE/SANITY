@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Threat Modeler · UxV threat-modeling engine</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#111823; --panel-2:#0d141d; --line:#1e2a3a;
+    --ink:#c9d4e3; --muted:#6b7a90; --muted-2:#4a5768;
+    --amber:#f0a72a; --amber-dim:#7a5a1c;
+    --cyan:#33b3c7; --violet:#9a7bd6; --rose:#e0607a; --green:#4fbf8b;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px}
+  body{display:flex;flex-direction:column;overflow:hidden}
+  code{font-family:var(--mono)} a{color:var(--amber)}
+  .hdr{display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0d141d,#0a0e14)}
+  .hdr h1{font-size:15px;margin:0;letter-spacing:.5px;font-weight:600} .hdr h1 b{color:var(--amber)}
+  .hdr .sub{font-family:var(--mono);font-size:11px;color:var(--muted)} .spacer{flex:1}
+  .tabs{display:flex;gap:2px} .tab{font-family:var(--mono);font-size:12px;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;padding:6px 12px;cursor:pointer}
+  .tab.on{color:var(--amber);border-bottom-color:var(--amber)}
+  .btn{font-family:var(--mono);font-size:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 11px;border-radius:5px;cursor:pointer;transition:.12s}
+  .btn:hover{border-color:var(--amber-dim);color:#fff}
+  .btn.primary{border-color:var(--amber-dim);color:var(--amber)} .btn.primary:hover{background:#1a130a;border-color:var(--amber)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  main{flex:1;position:relative;min-height:0}
+  .view{position:absolute;inset:0;display:none} .view.on{display:grid}
+  #v-system{grid-template-columns:1fr 372px}
+  #stage{position:relative;min-width:0;overflow:hidden;user-select:none;background:radial-gradient(circle at 1px 1px,#141c28 1px,transparent 0) 0 0/26px 26px,var(--bg)}
+  .zoomctl{position:absolute;right:12px;top:12px;display:flex;gap:4px;z-index:5;background:rgba(10,14,20,.75);border:1px solid var(--line);border-radius:6px;padding:3px}
+  .zoomctl button{font-family:var(--mono);font-size:13px;line-height:1;width:26px;height:24px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:4px;cursor:pointer}
+  .zoomctl button:hover{border-color:var(--amber-dim);color:#fff}
+  .zoomctl .zlvl{width:auto;padding:0 6px;color:var(--muted);border:none;background:none;cursor:default}
+  #drop{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;color:var(--muted)}
+  #drop.hide{display:none} #drop .big{font-size:15px;color:var(--ink)} #drop .hint{font-family:var(--mono);font-size:12px;max-width:460px;line-height:1.6}
+  #drop.over{background:#0e1622;outline:1px dashed var(--amber-dim);outline-offset:-16px}
+  svg{width:100%;height:100%;display:block}
+  .node{cursor:pointer} .node rect,.node ellipse,.node path.ds{stroke-width:1.5;fill:var(--panel);transition:.12s}
+  .node text{font-family:var(--mono);font-size:11px;fill:var(--ink);pointer-events:none}
+  .node.t-process ellipse{stroke:var(--cyan)} .node.t-external rect{stroke:var(--amber)}
+  .node.t-store path.ds{stroke:var(--violet)} .node.t-element rect{stroke:var(--muted)}
+  .node.sel rect,.node.sel ellipse,.node.sel path.ds{fill:#17202d;stroke-width:2.5;filter:drop-shadow(0 0 6px rgba(240,167,42,.35))}
+  .node.entry rect,.node.entry ellipse{stroke:var(--rose);stroke-dasharray:4 2} .node.endpoint rect,.node.endpoint ellipse{stroke:var(--green);stroke-width:2.5}
+  .node .badge{fill:var(--green)} .node .role{font-family:var(--mono);font-size:9px}
+  .edge{stroke:var(--muted-2);stroke-width:1.4;fill:none;transition:.12s} .edge-hit{stroke:transparent;stroke-width:12;fill:none;cursor:pointer}
+  .edge.sel{stroke:var(--amber);stroke-width:2.2} .elabel{font-family:var(--mono);font-size:9.5px;fill:var(--muted);pointer-events:none}
+  .legend{position:absolute;left:12px;bottom:12px;display:flex;gap:12px;font-family:var(--mono);font-size:11px;color:var(--muted);background:rgba(10,14,20,.7);padding:6px 10px;border:1px solid var(--line);border-radius:6px}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  aside{border-left:1px solid var(--line);background:var(--panel-2);display:flex;flex-direction:column;min-height:0}
+  .meter{padding:12px 16px;border-bottom:1px solid var(--line)}
+  .meter .row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:6px}
+  .meter .bar{height:6px;background:#0a0e14;border-radius:3px;overflow:hidden;border:1px solid var(--line)} .meter .fill{height:100%;background:linear-gradient(90deg,var(--amber-dim),var(--amber));width:0;transition:.25s}
+  .cfg{flex:1;overflow:auto} .cfg .empty{padding:26px 18px;color:var(--muted);font-family:var(--mono);font-size:12px;line-height:1.7}
+  .cfg h2{font-size:13px;margin:0;padding:14px 16px 4px;letter-spacing:.4px} .cfg .kind{font-family:var(--mono);font-size:11px;color:var(--amber);padding:0 16px 10px}
+  .grp{border-top:1px solid var(--line);padding:12px 16px} .grp .gt{font-family:var(--mono);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  label.f{display:block;margin-bottom:10px} label.f .l{font-family:var(--mono);font-size:11px;color:var(--muted);display:block;margin-bottom:3px} label.f .src{color:var(--muted-2);font-size:10px}
+  input.i,textarea.i,select.i{width:100%;background:#0a0e14;border:1px solid var(--line);border-radius:5px;color:var(--ink);font-family:var(--mono);font-size:12px;padding:6px 8px;resize:vertical}
+  input.i:focus,textarea.i:focus{outline:none;border-color:var(--amber-dim)} textarea.i{min-height:46px}
+  .customrow{display:flex;gap:6px;margin-bottom:6px} .customrow input{flex:1}
+  .addc{font-family:var(--mono);font-size:11px;color:var(--amber);cursor:pointer;background:none;border:none;padding:2px 0}
+  .note{font-family:var(--mono);font-size:10px;color:var(--muted-2);padding:8px 16px 12px;line-height:1.6}
+  .rag{border-top:1px solid var(--line);padding:12px 16px}
+  .rag .gt{font-family:var(--mono);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);margin-bottom:8px}
+  .rag .q{font-family:var(--mono);font-size:10px;color:var(--muted-2);word-break:break-word;margin-bottom:8px;line-height:1.5}
+  .rag .f{border:1px solid var(--line);border-radius:5px;padding:7px 8px;margin-bottom:6px;background:#0a0e14}
+  .rag .fh{font-family:var(--mono);font-size:10.5px;color:var(--cyan);word-break:break-word;line-height:1.5}
+  .rag .fs{font-size:11px;color:var(--muted);line-height:1.5;margin-top:3px;white-space:pre-wrap;word-break:break-word}
+  .rag .sc{color:var(--amber)}
+  .hidden{display:none}
+  .pad{overflow:auto;padding:20px 22px;display:block}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:14px;max-width:900px}
+  .card h3{margin:0 0 4px;font-size:13px} .card p{margin:4px 0;color:var(--muted);font-size:12.5px;line-height:1.6}
+  .pipe{display:flex;gap:6px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;margin:8px 0 2px}
+  .pipe .st{border:1px solid var(--line);border-radius:4px;padding:3px 7px;color:var(--muted)} .pipe .st.code{border-color:#274; color:var(--green)} .pipe .st.llm{border-color:#630;color:var(--amber)}
+  .scfg{display:grid;grid-template-columns:130px 1fr;gap:8px 12px;align-items:center;font-family:var(--mono);font-size:12px;max-width:900px}
+  .scfg label{color:var(--muted)}
+  .scfg input,.scfg select{background:#0a0e14;border:1px solid var(--line);border-radius:5px;color:var(--ink);font-family:var(--mono);font-size:12px;padding:6px 8px}
+  .chk{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--ink);margin:4px 0}
+  .scenlist{max-width:900px} .scen{border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:8px;background:var(--panel-2);font-size:12.5px}
+  .scen .o{color:var(--amber);font-family:var(--mono)} .scen .ep{font-family:var(--mono);color:var(--muted);font-size:11px;margin-top:4px} .scen .x{float:right;cursor:pointer;color:var(--muted)}
+  #console{max-width:100%;background:#070b10;border:1px solid var(--line);border-radius:8px;padding:12px;font-family:var(--mono);font-size:11.5px;line-height:1.55;color:#a9b8cc;height:calc(100% - 220px);min-height:180px;overflow:auto;white-space:pre-wrap}
+  #console .ok{color:var(--green)} #console .warn{color:var(--amber)} #console .err{color:var(--rose)} #console .dim{color:var(--muted-2)}
+  .logbox{max-width:900px;background:#070b10;border:1px solid var(--line);border-radius:8px;padding:12px;font-family:var(--mono);font-size:11.5px;line-height:1.55;color:#a9b8cc;max-height:360px;min-height:120px;overflow:auto;white-space:pre-wrap;margin-bottom:14px}
+  .logbox .ok{color:var(--green)} .logbox .warn{color:var(--amber)} .logbox .err{color:var(--rose)} .logbox .dim{color:var(--muted-2)}
+  #v-tree{grid-template-rows:auto 1fr}
+  .treebar{display:flex;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px}
+  #treeStage{position:relative;overflow:hidden;user-select:none;background:radial-gradient(circle at 1px 1px,#141c28 1px,transparent 0) 0 0/26px 26px,var(--bg)}
+  .tnode rect{stroke-width:1.5} .tnode.k-root rect{fill:#1c1608;stroke:var(--amber)} .tnode.k-node rect{fill:#15101f;stroke:var(--violet)}
+  .tnode text{font-family:var(--mono);font-size:10.5px;fill:var(--ink)} .tnode .lg{fill:var(--cyan);font-weight:700} .tedge{stroke:var(--muted-2);stroke-width:1.3;fill:none}
+  .tempty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono);font-size:13px}
+  .tnode{cursor:pointer} .tnode.tsel rect{stroke-width:3;filter:drop-shadow(0 0 7px rgba(240,167,42,.5))}
+  #treeInspect{position:absolute;left:0;top:0;bottom:0;width:340px;max-width:62%;background:rgba(13,20,29,.97);border-right:1px solid var(--line);display:none;flex-direction:column;z-index:6}
+  #treeInspect.show{display:flex}
+  #treeInspect .ih{display:flex;align-items:center;gap:8px;padding:9px 12px 9px 14px;border-bottom:1px solid var(--line)}
+  #treeInspect .ib{padding:12px 14px;overflow:auto}
+  .ikind{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:4px}
+  .ikind.k-root{color:var(--amber);border:1px solid var(--amber-dim)}
+  .ikind.k-node{color:var(--violet);border:1px solid #4a3d6b}
+  #treeInspect .lbl{font-size:14px;color:#fff;margin:2px 0 10px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+  #treeInspect .meta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:4px}
+  #treeInspect .bc{font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-top:12px;line-height:1.8;border-top:1px solid var(--line);padding-top:10px}
+  #treeInspect .bc .step{color:var(--muted)} #treeInspect .bc .cur{color:var(--ink)}
+  #treeInspect .asect{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+  #treeInspect .ah{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);margin-bottom:6px}
+  #treeInspect .actx{font-size:12.5px;color:var(--ink);line-height:1.6;white-space:pre-wrap;word-break:break-word}
+  #treeInspect .evrow{display:flex;gap:8px;align-items:baseline;margin-bottom:5px}
+  #treeInspect .evid{font-family:var(--mono);font-size:10.5px;color:var(--amber);border:1px solid var(--amber-dim);border-radius:4px;padding:1px 6px;white-space:nowrap;flex:none}
+  #treeInspect .evnote{font-size:11.5px;color:var(--muted);line-height:1.5}
+  #modal{position:fixed;inset:0;background:rgba(5,8,12,.72);display:none;align-items:center;justify-content:center;z-index:50} #modal.show{display:flex}
+  #modal .box{width:min(860px,92vw);height:min(80vh,720px);background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column}
+  #modal .mh{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)} #modal .mh .t{font-family:var(--mono);font-size:12px;color:var(--amber)}
+  #modal pre{flex:1;overflow:auto;margin:0;padding:14px;font-family:var(--mono);font-size:11.5px;line-height:1.5;color:#b8c6d8;white-space:pre}
+</style>
+</head>
+<body>
+  <div class="hdr">
+    <h1><b>Threat Modeler</b></h1><span class="sub">UxV threat-modeling engine · Python engine via local server</span>
+    <div class="tabs" style="margin-left:14px">
+      <button class="tab on" data-view="engine">0 · Engine config</button>
+      <button class="tab" data-view="system">1 · System</button>
+      <button class="tab" data-view="scenarios">2 · Scenarios</button>
+      <button class="tab" data-view="run">3 · Run engine</button>
+      <button class="tab" data-view="tree">4 · Attack tree</button>
+    </div>
+    <span class="spacer"></span>
+    <input id="cfgFile" type="file" accept=".xml,.json" class="hidden"/>
+    <button class="btn primary" id="loadCfg" title="load an OpenXSAM++ .xml (or overlay annotations JSON)">Load config</button>
+    <button class="btn" id="saveCfg" disabled title="export annotations JSON">Save config</button>
+    <button class="btn" id="genBtn" disabled title="view OpenXSAM++ XML">OpenXSAM++</button>
+  </div>
+
+  <main>
+    <section class="view on" id="v-engine">
+      <div class="pad">
+        <div class="card">
+          <h3>Engine configuration <span style="color:var(--muted);font-weight:400;font-size:11px">(LLM agent)</span></h3>
+          <p>Pick the LLM provider and model the agent uses for scenario derivation and attack-tree
+             construction, and (optionally) the Attack-RAG threat DB. These settings apply to both
+             <b>Derive scenarios</b> (tab 2) and <b>Run engine</b> (tab 3).</p>
+          <div class="scfg">
+            <label>Provider</label><select id="provider" class="i">
+              <option value="anthropic">Anthropic (API)</option>
+              <option value="openai">OpenAI-compatible API (OpenRouter / Groq / Together / ...)</option>
+              <option value="ollama-cloud">Ollama Cloud (hosted · API key)</option>
+              <option value="ollama">Ollama (local)</option>
+            </select>
+            <label id="apiKeyLabel">API key</label><input id="apiKey" type="password" placeholder="sk-ant-...  (sent to your local server per request, never stored)"/>
+            <label>Model</label><input id="model" list="models" value="claude-sonnet-4-6"/>
+            <datalist id="models"></datalist>
+            <label id="baseUrlLabel">Base URL</label><input id="baseUrl" list="baseUrls" placeholder="provider endpoint"/>
+            <datalist id="baseUrls"></datalist>
+          </div>
+          <div style="margin-top:12px">
+            <div class="chk"><input type="checkbox" id="useRag" checked/><label for="useRag">Enrich components via Attack-RAG threat DB (TTP / CVE / CWE)</label></div>
+            <label class="f" style="margin-top:6px;max-width:520px"><span class="l">Attack-RAG URL (optional)</span><input class="i" id="ragUrl" placeholder="default: server ATTACK_RAG_URL"/></label>
+          </div>
+          <p style="color:var(--muted-2);font-size:11px;margin-top:8px">
+            Ollama Cloud &amp; local Ollama support Gemma and other open models. For Ollama Cloud enter your
+            ollama.com API key; any model tag your account can pull (including newer Gemma releases) may be typed
+            into the Model field.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="v-system">
+      <div id="stage">
+        <div id="drop">
+          <div class="big">Drop an <code>OpenXSAM++</code> file, or click <b>Load config</b></div>
+          <div class="hint">The <code>.openxsampp.xml</code> carries the topology, per-component configuration
+            (Software/Hardware/Interface), and DFD layout in one file. The Python engine parses it and
+            renders the DFD here.</div>
+        </div>
+        <svg id="svg" class="hidden" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="zoomctl hidden" id="zoomSys">
+          <button data-z="out" title="zoom out">−</button>
+          <span class="zlvl" id="zlvlSys">100%</span>
+          <button data-z="in" title="zoom in">+</button>
+          <button data-z="reset" title="reset / fit">⟳</button>
+        </div>
+        <div id="legend" class="legend hidden">
+          <span><i style="background:var(--cyan)"></i>Process</span><span><i style="background:var(--amber)"></i>External</span>
+          <span><i style="background:var(--violet)"></i>Store</span><span><i style="background:var(--rose)"></i>entry</span><span><i style="background:var(--green)"></i>endpoint</span>
+        </div>
+      </div>
+      <aside>
+        <div class="meter"><div class="row"><span id="mLabel">no model loaded</span><span id="mPct">0%</span></div>
+          <div class="bar"><div class="fill" id="mFill"></div></div></div>
+        <div class="cfg" id="cfg"><div class="empty">Load a model, then click a node to enter its
+          function-level configuration (OpenXSAM++ Software/Hardware, DefenseWeaver §IV-B1). Blank fields export as <code>unspecified</code> — nothing is fabricated.</div></div>
+      </aside>
+    </section>
+
+    <section class="view" id="v-scenarios">
+      <div class="pad">
+        <div class="card">
+          <h3>Threat scenarios <span style="color:var(--muted);font-weight:400;font-size:11px">(RAG-grounded)</span></h3>
+          <p>Click <b>Derive scenarios</b>: the engine queries the Attack-RAG threat DB <b>once per component</b>
+             (using each component's configuration) to gather <span style="color:var(--green)">TTP / CVE / CWE</span> evidence,
+             then the LLM infers plausible scenarios — each an
+             <b style="color:var(--rose)">objective</b> → one or more <b style="color:var(--rose)">entry</b> components →
+             one <b style="color:var(--green)">endpoint</b> — grounded in that evidence. The log below shows every RAG
+             query and the chunks it returns; the enriched context is reused when you Run the engine.</p>
+          <div class="pipe"><span class="st code">RAG · per-component context</span><span class="st llm">LLM · scenario inference</span></div>
+          <div style="margin-top:12px"><button class="btn primary" id="deriveScen">Derive scenarios</button>
+            <span id="deriveHint" style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:8px"></span></div>
+        </div>
+        <div id="scenConsole" class="logbox dim">no derivation yet — configure the LLM (tab 0), load a model (tab 1), then Derive scenarios.</div>
+        <div class="scenlist" id="scenList"></div>
+      </div>
+    </section>
+
+    <section class="view" id="v-run">
+      <div class="pad">
+        <div class="card">
+          <h3>Pipeline</h3>
+          <div class="pipe">
+            <span class="st code">OpenXSAM++</span><span class="st llm">scenario</span>
+            <span class="st code">DFS path</span><span class="st code">atom split</span>
+            <span class="st llm">Constructor</span><span class="st llm">Assembler</span><span class="st code">tree</span>
+          </div>
+          <p><span style="color:var(--green)">green</span> = deterministic Python code · <span style="color:var(--amber)">amber</span> = Claude agent (called server-side).
+             Risk Assessor / feasibility are omitted by design. Sub-trees are built per atom (independent), then merged + validated.
+             LLM &amp; RAG settings live on <b>tab 0 · Engine config</b>. Completed attack trees appear on tab 4 as each scenario finishes.</p>
+          <div style="margin-top:12px"><button class="btn primary" id="runBtn" disabled>Run engine</button>
+            <span id="runHint" style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:8px"></span></div>
+        </div>
+        <div id="console" class="dim">engine idle — configure the LLM (tab 0), load a model (tab 1), then Run. Scenarios are auto-derived if you haven't run Derive on tab 2.</div>
+      </div>
+    </section>
+
+    <section class="view" id="v-tree">
+      <div class="treebar">
+        <span>scenario</span>
+        <select id="treeSel" class="i" style="width:auto;min-width:280px"></select>
+        <span class="spacer" style="flex:1"></span>
+        <button class="btn" id="viewJson">JSON</button>
+        <button class="btn" id="dlSvg">Download SVG</button>
+        <button class="btn primary" id="dlPng">Download PNG</button>
+      </div>
+      <div id="treeStage"><div class="tempty" id="treeEmpty">no attack tree yet — run the engine on the Run tab.</div>
+        <svg id="tsvg" class="hidden"></svg>
+        <div id="treeInspect">
+          <div class="ih"><span class="ikind" id="iKind">node</span><span style="flex:1"></span>
+            <button class="btn" id="iClose">✕</button></div>
+          <div class="ib" id="iBody"></div>
+        </div>
+        <div class="zoomctl hidden" id="zoomTree">
+          <button data-z="out" title="zoom out">−</button>
+          <span class="zlvl" id="zlvlTree">100%</span>
+          <button data-z="in" title="zoom in">+</button>
+          <button data-z="reset" title="reset / fit">⟳</button>
+        </div></div>
+    </section>
+  </main>
+
+  <div id="modal"><div class="box"><div class="mh"><span class="t" id="modalTitle">JSON</span><span style="flex:1"></span>
+    <button class="btn" onclick="copyModal()">Copy</button><button class="btn" onclick="dlModal()">Download</button><button class="btn" onclick="closeModal()">Close</button></div>
+    <pre id="modalPre"></pre></div></div>
+
+<script>
+/* =====================================================================================
+ * Threat Modeler browser client. All ENGINE logic (parse, OpenXSAM++, DFS, atoms, and the
+ * four LLM stages) runs in the Python package on the local server; this file only
+ * renders the DFD/tree and calls the JSON endpoints. Serve with:  python -m threat_modeler serve
+ * =================================================================================== */
+
+let MODEL=null, CONFIG={}, SEL=null, SCENARIOS=[], TREES=[], SCHEMA=null, OXPP_XML=null;
+let CONTEXTS={};   // Attack-RAG per-component enrichment from the Scenarios tab (reused on Run)
+let MODEL_CATALOG=[], MODEL_DEFAULTS={}, DEFAULT_OLLAMA_BASE_URL='http://localhost:11434';
+let BASE_URLS={}, OPENAI_PRESETS={};
+let sysPZ=null, treePZ=null;
+
+// ---------- pan / zoom (wheel to zoom at cursor, drag to pan) ----------
+function makePanZoom(svgEl, containerEl, lvlEl){
+  const st={scale:1,tx:0,ty:0};
+  function apply(){svgEl.style.transformOrigin='0 0';
+    svgEl.style.transform=`translate(${st.tx}px,${st.ty}px) scale(${st.scale})`;
+    if(lvlEl) lvlEl.textContent=Math.round(st.scale*100)+'%';}
+  function zoomAt(mx,my,f){const ns=Math.min(8,Math.max(0.15,st.scale*f));
+    st.tx=mx-(mx-st.tx)*(ns/st.scale);st.ty=my-(my-st.ty)*(ns/st.scale);st.scale=ns;apply();}
+  containerEl.addEventListener('wheel',e=>{e.preventDefault();const r=containerEl.getBoundingClientRect();
+    zoomAt(e.clientX-r.left,e.clientY-r.top,Math.exp(-e.deltaY*0.0015));},{passive:false});
+  let drag=false,ox=0,oy=0;
+  containerEl.addEventListener('pointerdown',e=>{if(e.button!==0)return;
+    if(e.target.closest('.node')||e.target.closest('[data-edge]')||e.target.closest('.zoomctl')||e.target.closest('.tnode')||e.target.closest('#treeInspect'))return;
+    drag=true;ox=e.clientX-st.tx;oy=e.clientY-st.ty;containerEl.style.cursor='grabbing';
+    try{containerEl.setPointerCapture(e.pointerId);}catch(_){}});
+  containerEl.addEventListener('pointermove',e=>{if(!drag)return;st.tx=e.clientX-ox;st.ty=e.clientY-oy;apply();});
+  const end=()=>{drag=false;containerEl.style.cursor='';};
+  containerEl.addEventListener('pointerup',end);containerEl.addEventListener('pointercancel',end);
+  st.zoomBtn=f=>{const r=containerEl.getBoundingClientRect();zoomAt(r.width/2,r.height/2,f);};
+  st.reset=()=>{st.scale=1;st.tx=0;st.ty=0;apply();};
+  st.fit=()=>{const cw=containerEl.clientWidth,ch=containerEl.clientHeight;
+    if(cw<10||ch<10)return; // view not visible yet
+    const tw=parseFloat(svgEl.getAttribute('width'))||cw, th=parseFloat(svgEl.getAttribute('height'))||ch;
+    let k=Math.min(cw/tw,ch/th)*0.95; if(!(k>0&&isFinite(k)))k=1; k=Math.min(k,1.5);
+    st.scale=k;st.tx=(cw-tw*k)/2;st.ty=Math.max(10,(ch-th*k)/2);apply();};
+  apply();return st;
+}
+
+// standalone SVG (styles embedded) — used by both PNG and SVG export
+const TREE_EXPORT_CSS=
+  ".tnode rect{stroke-width:1.5}"+
+  ".tnode.k-root rect{fill:#1c1608;stroke:#f0a72a}"+
+  ".tnode.k-node rect{fill:#15101f;stroke:#9a7bd6}"+
+  ".tnode text{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;fill:#c9d4e3}"+
+  ".tnode .lg{fill:#33b3c7;font-weight:700}"+
+  ".tedge{stroke:#4a5768;stroke-width:1.3;fill:none}";
+function treeStandaloneSVG(){
+  const vb=tsvg.getAttribute('viewBox')||'0 0 800 600';
+  const w=tsvg.getAttribute('width')||'800', h=tsvg.getAttribute('height')||'600';
+  const p=vb.split(/\s+/).map(Number);
+  const bg=`<rect x="${p[0]}" y="${p[1]}" width="${p[2]}" height="${p[3]}" fill="#0a0e14"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${w}" height="${h}">`+
+         `<style>${TREE_EXPORT_CSS}</style>${bg}${tsvg.innerHTML}</svg>`;
+}
+function dlBlobSvg(svgStr){dl(new Blob([svgStr],{type:'image/svg+xml'}),'attack_tree.svg');}
+function downloadTreeSvg(){if(tsvg.classList.contains('hidden')){alert('no tree to export');return;}dlBlobSvg(treeStandaloneSVG());}
+
+// ---------- server calls ----------
+async function api(path, body){
+  const res = await fetch(path, {method:'POST', headers:{'content-type':'application/json'},
+    body: JSON.stringify(body)});
+  const data = await res.json();
+  if(!res.ok || data.error) throw new Error(data.error || ('HTTP '+res.status));
+  return data;
+}
+async function getJson(path){const r=await fetch(path); if(!r.ok) throw new Error('HTTP '+r.status); return r.json();}
+// Stream a newline-delimited JSON POST response, calling onObj for each object.
+async function streamNDJSON(path, body, onObj){
+  const res=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  if(!res.ok || !res.body) throw new Error('HTTP '+res.status);
+  const reader=res.body.getReader(), dec=new TextDecoder(); let buf='';
+  while(true){
+    const {value,done}=await reader.read(); if(done) break;
+    buf+=dec.decode(value,{stream:true}); let nl;
+    while((nl=buf.indexOf('\n'))>=0){
+      const line=buf.slice(0,nl).trim(); buf=buf.slice(nl+1);
+      if(!line) continue;
+      let obj; try{ obj=JSON.parse(line); }catch(_){ continue; }
+      onObj(obj);
+    }
+  }
+}
+
+// ---------- boot ----------
+(async function boot(){
+  try{
+    SCHEMA = await getJson('/api/schema');
+    const m = await getJson('/api/models');
+    MODEL_CATALOG = m.models || [];
+    MODEL_DEFAULTS = m.defaults || {};
+    BASE_URLS = m.baseUrls || {};
+    OPENAI_PRESETS = m.openaiPresets || {};
+    DEFAULT_OLLAMA_BASE_URL = m.defaultOllamaBaseUrl || DEFAULT_OLLAMA_BASE_URL;
+    const dl=document.getElementById('models'); dl.innerHTML='';
+    MODEL_CATALOG.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.label=x.provider+' · '+x.display_name+' ['+x.status+']';dl.appendChild(o);});
+    const bdl=document.getElementById('baseUrls'); bdl.innerHTML='';
+    Object.entries(OPENAI_PRESETS).forEach(([name,url])=>{const o=document.createElement('option');o.value=url;o.label=name;bdl.appendChild(o);});
+    document.getElementById('provider').value = m.defaultProvider || 'anthropic';
+    document.getElementById('model').value = m.default;
+    syncProviderUi(false);
+  }catch(e){ alert('Cannot reach the local server. Start it with:  python -m threat_modeler serve\n\n'+e.message); }
+})();
+
+// ---------- shared helpers ----------
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+function currentProvider(){return document.getElementById('provider').value||'anthropic';}
+function providerNeedsKey(){return currentProvider()!=='ollama';}
+function providerNeedsBase(){return currentProvider()!=='anthropic';}  // openai + ollama use a base URL
+function syncProviderUi(forceModel){
+  const p=currentProvider(), modelEl=document.getElementById('model'), keyEl=document.getElementById('apiKey'),
+        baseEl=document.getElementById('baseUrl');
+  const def=MODEL_DEFAULTS[p];
+  const cur=MODEL_CATALOG.find(x=>x.id===modelEl.value);
+  if(def && (forceModel || !modelEl.value || (cur && cur.provider!==p))) modelEl.value=def;
+  // set the base URL to this provider's default when switching (or first load)
+  if(forceModel || !baseEl.value || !baseEl.value.trim()) baseEl.value = BASE_URLS[p]||'';
+  const keyLabels={anthropic:'Anthropic API key', openai:'API key (OpenRouter/Groq/...)',
+                   'ollama-cloud':'Ollama Cloud API key', ollama:'Ollama token (optional)'};
+  const keyPh={anthropic:'sk-ant-...  (sent to your local server per request, never stored)',
+               openai:'your API key for the chosen service (OpenRouter/Groq/...)',
+               'ollama-cloud':'your ollama.com API key (sent per request, never stored)',
+               ollama:'optional bearer token for a remote Ollama API'};
+  const baseLabels={anthropic:'Base URL (n/a)', openai:'API base URL',
+                    'ollama-cloud':'Ollama Cloud base URL', ollama:'Ollama base URL'};
+  document.getElementById('apiKeyLabel').textContent = keyLabels[p]||'API key';
+  keyEl.placeholder = keyPh[p]||'';
+  document.getElementById('baseUrlLabel').textContent = baseLabels[p]||'Base URL';
+  baseEl.disabled = (p==='anthropic');
+  updateRunHint();
+}
+
+// ==================== SYSTEM GRAPH RENDER ====================
+const svg=document.getElementById('svg');
+function center(n){return{cx:n.x+n.w/2,cy:n.y+n.h/2};}
+function boundary(n,tx,ty){const{cx,cy}=center(n);const dx=tx-cx,dy=ty-cy;if(!dx&&!dy)return{x:cx,y:cy};const s=Math.min(dx?n.w/2/Math.abs(dx):1e9,dy?n.h/2/Math.abs(dy):1e9);return{x:cx+dx*s,y:cy+dy*s};}
+function entrySet(){const s=new Set();SCENARIOS.forEach(x=>x.entryIds.forEach(i=>s.add(i)));return s;}
+function endSet(){const s=new Set();SCENARIOS.forEach(x=>s.add(x.endpointId));return s;}
+function roleOf(guid){const isX=endSet().has(guid),isE=entrySet().has(guid);return isX?'endpoint':isE?'entry':'';}
+function render(){
+  if(!MODEL)return;const N=MODEL.nodes;
+  const minX=Math.min(...N.map(n=>n.x))-20,minY=Math.min(...N.map(n=>n.y))-20,maxX=Math.max(...N.map(n=>n.x+n.w))+20,maxY=Math.max(...N.map(n=>n.y+n.h))+40;
+  svg.setAttribute('viewBox',`${minX} ${minY} ${maxX-minX} ${maxY-minY}`);
+  const byId=Object.fromEntries(N.map(n=>[n.guid,n]));let s='';
+  s+=`<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4a5768"/></marker></defs>`;
+  MODEL.edges.forEach(e=>{const a=byId[e.source],b=byId[e.target];if(!a||!b)return;const ac=center(a),bc=center(b);const p1=boundary(a,bc.cx,bc.cy),p2=boundary(b,ac.cx,ac.cy);const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;const sc=(SEL&&SEL.kind==='edge'&&SEL.guid===e.guid)?' sel':'';
+    s+=`<g data-edge="${e.guid}"><path class="edge${sc}" d="M${p1.x},${p1.y} L${p2.x},${p2.y}" marker-end="url(#arr)"/><path class="edge-hit" d="M${p1.x},${p1.y} L${p2.x},${p2.y}"/><text class="elabel" x="${mx}" y="${my-3}" text-anchor="middle">${esc(e.label)}</text></g>`;});
+  N.forEach(n=>{const{cx,cy}=center(n);const role=roleOf(n.guid);const sc=(SEL&&SEL.kind==='node'&&SEL.guid===n.guid)?' sel':'';const rc=role?` ${role}`:'';
+    const done=isConfigured(n.guid)?`<circle class="badge" cx="${n.x+n.w-8}" cy="${n.y+8}" r="3.5"/>`:'';
+    const ragd=(CONTEXTS[n.guid]&&(CONTEXTS[n.guid].findings||[]).length)?`<circle cx="${n.x+n.w-8}" cy="${n.y+18}" r="3.5" fill="var(--cyan)"><title>RAG-enriched</title></circle>`:'';
+    let shape;if(n.type==='process')shape=`<ellipse cx="${cx}" cy="${cy}" rx="${n.w/2}" ry="${n.h/2}"/>`;
+    else if(n.type==='store')shape=`<path class="ds" d="M${n.x},${n.y} h${n.w} M${n.x},${n.y+n.h} h${n.w} M${n.x},${n.y} v${n.h} M${n.x+n.w},${n.y} v${n.h}"/><rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" fill="transparent" stroke="none"/>`;
+    else shape=`<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="3"/>`;
+    const roleLbl=role?`<text class="role" x="${cx}" y="${n.y-4}" text-anchor="middle" fill="${role==='endpoint'?'var(--green)':'var(--rose)'}">${role}</text>`:'';
+    s+=`<g class="node t-${n.type}${sc}${rc}" data-node="${n.guid}">${shape}${wrap(n.label,cx,cy,n.w)}${done}${ragd}${roleLbl}</g>`;});
+  svg.innerHTML=s;
+  svg.querySelectorAll('[data-node]').forEach(g=>g.onclick=()=>select('node',g.getAttribute('data-node')));
+  svg.querySelectorAll('[data-edge]').forEach(g=>g.onclick=()=>select('edge',g.getAttribute('data-edge')));
+}
+function wrap(label,cx,cy,w){const words=String(label).split(/\s+/),lines=[],max=Math.max(10,Math.floor(w/6.6));let cur='';for(const wd of words){if((cur+' '+wd).trim().length>max){lines.push(cur);cur=wd;}else cur=(cur+' '+wd).trim();}if(cur)lines.push(cur);const st=cy-(lines.length-1)*6.5;return lines.map((ln,i)=>`<text x="${cx}" y="${st+i*13}" text-anchor="middle" dominant-baseline="middle">${esc(ln)}</text>`).join('');}
+
+// ==================== CONFIG PANEL (schema fetched from server) ====================
+function isConfigured(guid){const c=CONFIG[guid];if(!c)return false;return Object.keys(c).some(k=>k!=='__custom'&&c[k]&&String(c[k]).trim())||(c.__custom&&c.__custom.some(x=>x.k&&x.v));}
+function select(kind,guid){SEL={kind,guid};render();renderConfig();}
+// RAG enrichment for a component — the raw chunks retrieved for it (verbatim,
+// not LLM-rewritten). CONTEXTS is filled by Derive scenarios (tab 2).
+function ragSectionHTML(guid){
+  const ctx=CONTEXTS&&CONTEXTS[guid];
+  let h=`<div class="rag"><div class="gt">RAG threat context</div>`;
+  if(!ctx||!(ctx.findings&&ctx.findings.length)){
+    h+=`<div class="note" style="padding:0">no RAG context for this component yet — run <b>Derive scenarios</b> (tab 2) with Attack-RAG enabled`+
+       (ctx&&ctx.query?`; the query ran but returned 0 chunks`:'')+`.</div></div>`;
+    return h;
+  }
+  h+=`<div class="q">query sent to RAG: ${esc(ctx.query||'')}</div>`;
+  ctx.findings.forEach(f=>{
+    const sc=(typeof f.score==='number')?f.score.toFixed(3):esc(String(f.score==null?'':f.score));
+    const idn=`${esc(f.corpus||'?')}:${esc(f.id||'?')}`;
+    const name=f.name?` · ${esc(f.name)}`:'';
+    const link=f.url?` <a href="${esc(f.url)}" target="_blank" rel="noopener">↗</a>`:'';
+    h+=`<div class="f"><div class="fh">${idn}${name} <span class="sc">score ${sc}</span>${link}</div>`+
+       (f.summary?`<div class="fs">${esc(f.summary)}</div>`:'')+`</div>`;
+  });
+  h+=`<div class="note" style="padding:8px 0 0">${ctx.findings.length} raw retrieved chunk(s), mapped to this
+      component by a config-built query. <b>Not LLM-rewritten</b> — the agent consumes these verbatim when it
+      derives scenarios &amp; builds sub-trees.</div></div>`;
+  return h;
+}
+function renderConfig(){
+  const cfg=document.getElementById('cfg');
+  if(!SEL||!SCHEMA){cfg.innerHTML='<div class="empty">Click a node or channel to configure it.</div>';return;}
+  const isNode=SEL.kind==='node',item=(isNode?MODEL.nodes:MODEL.edges).find(x=>x.guid===SEL.guid);
+  const schema=isNode?SCHEMA.nodeFields:SCHEMA.edgeFields;
+  const c=CONFIG[SEL.guid]||(CONFIG[SEL.guid]={});
+  const kl=isNode?({process:'Process',external:'External Interactor',store:'Data Store',element:'Element'})[item.type]:'Channel (data flow)';
+  let h=`<h2>${esc(item.label)}</h2><div class="kind">${kl}</div>`;
+  if(isNode){const role=roleOf(SEL.guid);
+    h+=`<div class="grp"><div class="gt">scenario role</div>
+    <div class="note" style="padding:0">${role?`this component is an <b style="color:${role==='endpoint'?'var(--green)':'var(--rose)'}">${role}</b> in a derived scenario`:'not used by any derived scenario yet — run <b>Derive scenarios</b> (tab 2)'}</div></div>`;
+    h+=ragSectionHTML(SEL.guid);}
+  for(const g of schema){h+=`<div class="grp"><div class="gt">${esc(g.group)}</div>`;
+    for(const f of g.fields){const val=c[f.key]||'';const ctrl=f.multiline?`<textarea class="i" data-k="${f.key}" placeholder="${esc(f.hint||'')}">${esc(val)}</textarea>`:`<input class="i" data-k="${f.key}" value="${esc(val)}" placeholder="${esc(f.hint||'')}"/>`;
+      h+=`<label class="f"><span class="l">${esc(f.label)} <span class="src">— ${esc(f.src)}</span></span>${ctrl}</label>`;}h+=`</div>`;}
+  h+=`<div class="grp"><div class="gt">Custom attributes</div><div id="customWrap"></div><button class="addc" id="addCustom">+ add attribute</button></div>`;
+  h+=`<div class="note">Field source tags show provenance in DefenseWeaver's OpenXSAM++ definition (§IV-B1). Blank ⇒ <code>unspecified</code>.</div>`;
+  cfg.innerHTML=h;
+  cfg.querySelectorAll('[data-k]').forEach(el=>el.oninput=()=>{c[el.getAttribute('data-k')]=el.value;refreshMeter();render();});
+  renderCustom(c);document.getElementById('addCustom').onclick=()=>{(c.__custom=c.__custom||[]).push({k:'',v:''});renderCustom(c);};
+}
+function renderCustom(c){const wrap=document.getElementById('customWrap');if(!wrap)return;const list=c.__custom=c.__custom||[];wrap.innerHTML='';
+  list.forEach((row,i)=>{const d=document.createElement('div');d.className='customrow';d.innerHTML=`<input class="i" placeholder="key" value="${esc(row.k)}"><input class="i" placeholder="value" value="${esc(row.v)}"><button class="btn">✕</button>`;
+    const[k,v,del]=d.children;k.oninput=()=>{row.k=k.value;refreshMeter();render();};v.oninput=()=>{row.v=v.value;refreshMeter();render();};del.onclick=()=>{list.splice(i,1);renderCustom(c);refreshMeter();render();};wrap.appendChild(d);});}
+function refreshMeter(){if(!MODEL)return;const n=MODEL.nodes.length,done=MODEL.nodes.filter(x=>isConfigured(x.guid)).length,pct=n?Math.round(done/n*100):0;
+  document.getElementById('mFill').style.width=pct+'%';document.getElementById('mPct').textContent=pct+'%';document.getElementById('mLabel').textContent=`${done}/${n} nodes annotated · ${MODEL.edges.length} channels`;updateRunHint();}
+
+// ==================== ORCHESTRATION (server-backed) ====================
+const cons=document.getElementById('console');
+function log(msg,cls){cons.classList.remove('dim');const s=document.createElement('span');if(cls)s.className=cls;s.textContent=msg+'\n';cons.appendChild(s);cons.scrollTop=cons.scrollHeight;}
+
+function logLevel(l){return l==='ok'?'ok':l==='warn'?'warn':l==='err'?'err':l==='dim'?'dim':'';}
+async function runPipeline(){
+  try{
+    document.getElementById('runBtn').disabled=true;cons.textContent='';log('calling Python engine…','dim');
+    // Fresh tree list; trees stream in one per scenario as they complete.
+    TREES=[];document.getElementById('treeSel').innerHTML='';
+    const haveCtx=CONTEXTS && Object.keys(CONTEXTS).length>0;
+    if(haveCtx) log('reusing Attack-RAG context derived on the Scenarios tab','dim');
+    let result=null;
+    await streamNDJSON('/api/run',{
+      ...modelBody(), model:document.getElementById('model').value.trim(),
+      provider:currentProvider(), baseUrl:document.getElementById('baseUrl').value.trim(),
+      apiKey:document.getElementById('apiKey').value.trim(),
+      scenarios:SCENARIOS.length?SCENARIOS:null,
+      contexts:haveCtx?CONTEXTS:null,
+      useRag:document.getElementById('useRag').checked, ragUrl:document.getElementById('ragUrl').value.trim(),
+    }, obj=>{
+      if(obj.type==='log') log(obj.msg, logLevel(obj.level));
+      else if(obj.type==='error') log('ERROR: '+obj.error,'err');
+      else if(obj.type==='tree') addTreeResult({scenario:obj.scenario, tree:obj.tree, validationIssues:obj.validationIssues});
+      else if(obj.type==='result') result=obj;
+    });
+    if(result){
+      // The streamed 'tree' events already populated TREES; fall back to the
+      // final result only if none arrived (e.g. an older server).
+      if(!TREES.length && (result.trees||[]).length){ (result.trees||[]).forEach(addTreeResult); }
+      if(SCENARIOS.length===0 && TREES.length){SCENARIOS=TREES.map(t=>t.scenario);renderScenList();render();}
+    }
+  }catch(e){log('ERROR: '+e.message,'err');}
+  finally{document.getElementById('runBtn').disabled=false;updateRunHint();}
+}
+
+// ==================== ATTACK TREE RENDER ====================
+const tsvg=document.getElementById('tsvg');
+function layout(root){const NW=170,NH=38,HG=18,VG=76;let cur=0;
+  (function place(n,d){n._d=d;n._y=d*VG;if(!n.children||!n.children.length){n._x=cur;cur+=NW+HG;}else{n.children.forEach(c=>place(c,d+1));n._x=(n.children[0]._x+n.children[n.children.length-1]._x)/2;}})(root,0);
+  return{NW,NH,VG};}
+function renderTree(tree){
+  document.getElementById('treeEmpty').style.display='none';tsvg.classList.remove('hidden');
+  const {NW,NH,VG}=layout(tree);const all=[];(function col(n){all.push(n);(n.children||[]).forEach(col);})(tree);
+  const minX=Math.min(...all.map(n=>n._x)),maxX=Math.max(...all.map(n=>n._x+NW)),maxY=Math.max(...all.map(n=>n._y+NH));
+  tsvg.setAttribute('viewBox',`${minX-20} -20 ${maxX-minX+40} ${maxY+40}`);tsvg.setAttribute('width',maxX-minX+40);tsvg.setAttribute('height',maxY+40);
+  let s='';
+  (function edges(n){(n.children||[]).forEach(c=>{s+=`<path class="tedge" d="M${n._x+NW/2},${n._y+NH} C${n._x+NW/2},${n._y+NH+VG/2} ${c._x+NW/2},${c._y-VG/2} ${c._x+NW/2},${c._y}"/>`;edges(c);});})(tree);
+  indexTree(tree);
+  (function nodes(n,isRoot){const hasKids=(n.children||[]).length>0;const cls=isRoot?'k-root':'k-node';
+    const lg=hasKids?`<text class="lg" x="${n._x+NW/2}" y="${n._y-3}" text-anchor="middle">${esc(n.logic||'AND')}</text>`:'';
+    s+=`<g class="tnode ${cls}" data-tid="${n.__tid}">${lg}<rect x="${n._x}" y="${n._y}" width="${NW}" height="${NH}" rx="4"/>${twrap(n.summary||n.label||'',n._x+NW/2,n._y+NH/2,NW)}</g>`;
+    (n.children||[]).forEach(c=>nodes(c,false));})(tree,true);
+  tsvg.innerHTML=s;
+  tsvg.querySelectorAll('[data-tid]').forEach(g=>g.addEventListener('click',ev=>{ev.stopPropagation();showTreeNode(g.getAttribute('data-tid'),g);}));
+  hideInspect();
+  document.getElementById('zoomTree').classList.remove('hidden');
+  if(treePZ) treePZ.fit();}
+
+// ---- attack-tree node inspector (click a node -> full detail) ----
+let TREE_INDEX={};
+function countLeaves(n){if(!n||!n.children||!n.children.length)return 1;return n.children.reduce((s,c)=>s+countLeaves(c),0);}
+function indexTree(root){TREE_INDEX={};let i=0;
+  (function walk(n,parents){const tid='t'+(i++);n.__tid=tid;
+    TREE_INDEX[tid]={node:n,parents:parents.slice()};
+    (n.children||[]).forEach(c=>walk(c,parents.concat([n])));})(root,[]);}
+function hideInspect(){document.getElementById('treeInspect').classList.remove('show');
+  tsvg.querySelectorAll('.tnode.tsel').forEach(g=>g.classList.remove('tsel'));}
+function showTreeNode(tid,g){
+  const rec=TREE_INDEX[tid];if(!rec)return;const n=rec.node;
+  const isRoot=rec.parents.length===0, kids=(n.children||[]).length, hasKids=kids>0;
+  tsvg.querySelectorAll('.tnode.tsel').forEach(x=>x.classList.remove('tsel'));if(g)g.classList.add('tsel');
+  const kind=document.getElementById('iKind');
+  kind.className='ikind '+(isRoot?'k-root':'k-node');
+  kind.textContent = isRoot ? 'ROOT · OBJECTIVE' : (hasKids ? ((n.logic||'AND')+' NODE') : 'LEAF');
+  const leaves=countLeaves(n);
+  let meta='';
+  if(!hasKids) meta='leaf — one grounded, directly-actionable attack';
+  else meta=(n.logic||'AND')+' — '+(n.logic==='OR'?'any one child suffices':'all children required')+
+    (isRoot?` · final objective · ${kids} branch(es)`:` · ${kids} branch(es)`);
+  let bc='';
+  const chain=rec.parents.concat([n]);
+  bc=chain.map((p,idx)=>{const cls=idx===chain.length-1?'cur':'step';
+    const tag=(p.children&&p.children.length)?('['+(p.logic||'AND')+'] '):'';
+    return `<div class="${cls}">${'&nbsp;'.repeat(idx*2)}${idx?'└ ':''}${tag}${esc(p.summary||p.label||'')}</div>`;}).join('');
+  // Reasoned attack context woven into the node (Constructor/Assembler output).
+  const actx = (n.attack_context||'').trim();
+  const ev = Array.isArray(n.evidence) ? n.evidence : [];
+  let ctxHtml='';
+  if(actx) ctxHtml += `<div class="asect"><div class="ah">attack context</div><div class="actx">${esc(actx)}</div></div>`;
+  if(ev.length){
+    const rows = ev.map(e=>{
+      const id = esc((e&&e.id)||'');
+      const note = esc((e&&e.note)||'');
+      return `<div class="evrow"><span class="evid">${id||'?'}</span>${note?`<span class="evnote">${note}</span>`:''}</div>`;
+    }).join('');
+    ctxHtml += `<div class="asect"><div class="ah">evidence (${ev.length})</div>${rows}</div>`;
+  }
+  if(!hasKids && !actx && !ev.length){
+    ctxHtml += `<div class="asect"><div class="actx" style="color:var(--muted-2)">no attack context / evidence on this leaf — the model did not ground it.</div></div>`;
+  }
+  const belowTxt = hasKids ? `contains ${leaves} leaf attack(s) below` : 'leaf node';
+  document.getElementById('iBody').innerHTML =
+    `<div class="meta">${esc(meta)}</div>`+
+    `<div class="lbl">${esc(n.summary||n.label||'(no summary)')}</div>`+
+    ctxHtml+
+    `<div class="meta">${belowTxt}</div>`+
+    `<div class="bc"><b>path from root:</b>${bc}</div>`;
+  document.getElementById('treeInspect').classList.add('show');
+}
+document.getElementById('iClose').onclick=hideInspect;
+function twrap(label,cx,cy,w){const words=String(label).split(/\s+/),lines=[],max=Math.max(14,Math.floor(w/6));let cur='';for(const wd of words){if((cur+' '+wd).trim().length>max){lines.push(cur);cur=wd;}else cur=(cur+' '+wd).trim();}if(cur)lines.push(cur);const shown=lines.slice(0,3);if(lines.length>3)shown[2]=shown[2].slice(0,max-1)+'…';const st=cy-(shown.length-1)*6;return shown.map((ln,i)=>`<text x="${cx}" y="${st+i*12}" text-anchor="middle" dominant-baseline="middle">${esc(ln)}</text>`).join('');}
+// Append one completed scenario tree and show it live (first one auto-opens tab 4).
+function addTreeResult(tr){
+  const idx=TREES.length; TREES.push(tr);
+  const sel=document.getElementById('treeSel');
+  const o=document.createElement('option'); o.value=idx;
+  o.textContent=`${idx+1}. ${(tr.scenario&&tr.scenario.objective||'').slice(0,70)}`;
+  sel.appendChild(o);
+  sel.onchange=()=>{const t=TREES[+sel.value]; if(t) renderTree(t.tree);};
+  if(TREES.length===1){ sel.value='0'; renderTree(tr.tree); switchView('tree'); }
+}
+
+// ==================== SCENARIOS UI ====================
+function renderScenList(){const el=document.getElementById('scenList');el.innerHTML='';
+  SCENARIOS.forEach((s,i)=>{const byId=Object.fromEntries((MODEL?MODEL.nodes:[]).map(n=>[n.guid,n.label]));
+    const d=document.createElement('div');d.className='scen';
+    d.innerHTML=`<span class="x" data-i="${i}">✕</span><div class="o">${esc(s.objective)}</div>
+      <div class="ep">entry: ${s.entryIds.map(x=>esc(byId[x]||x)).join(', ')} → endpoint: ${esc(byId[s.endpointId]||s.endpointId)}</div>
+      ${s.rationale?`<div class="ep" style="color:var(--muted-2)">${esc(s.rationale)}</div>`:''}`;
+    d.querySelector('.x').onclick=()=>{SCENARIOS.splice(i,1);renderScenList();render();updateRunHint();};el.appendChild(d);});
+  updateRunHint();}
+
+// ==================== VIEW SWITCH + WIRING ====================
+function switchView(v){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.view===v));document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
+  if(v==='tree' && treePZ && !tsvg.classList.contains('hidden')) requestAnimationFrame(()=>treePZ.fit());}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>switchView(t.dataset.view));
+const drop=document.getElementById('drop'),legend=document.getElementById('legend');
+['dragover','dragenter'].forEach(ev=>stage.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>stage.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
+stage.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>loadOpenXSAMpp((r.result||'').trim());r.readAsText(f);});
+// server input body carries the OpenXSAM++ document the model was loaded from.
+function modelBody(){return {openxsampp:OXPP_XML, config:CONFIG};}
+function showLoadedModel(){
+  SEL=null;SCENARIOS=[];TREES=[];CONTEXTS={};
+  drop.classList.add('hide');svg.classList.remove('hidden');legend.classList.remove('hidden');
+  document.getElementById('zoomSys').classList.remove('hidden');
+  document.getElementById('genBtn').disabled=false;
+  document.getElementById('saveCfg').disabled=false;
+  if(sysPZ) sysPZ.reset();
+  render();renderConfig();refreshMeter();renderScenList();
+}
+async function loadOpenXSAMpp(xml){
+  try{
+    const d=await api('/api/parse_openxsampp',{xml});
+    OXPP_XML=xml;
+    MODEL={nodes:d.nodes, edges:d.edges};
+    CONFIG=d.config||{};
+    showLoadedModel();
+  }catch(e){alert('OpenXSAM++ load error: '+e.message);}
+}
+
+// ---- annotations JSON import / export ----
+function applyConfig(obj){
+  // accept either {guid:{...}} or the wrapped {"config":{guid:{...}}} envelope
+  const cfg=(obj && obj.config && typeof obj.config==='object')?obj.config:obj;
+  if(!cfg || typeof cfg!=='object') throw new Error('not a config object');
+  CONFIG=cfg;
+  const ids=new Set(MODEL.nodes.map(n=>n.guid).concat(MODEL.edges.map(e=>e.guid)));
+  const unknown=Object.keys(CONFIG).filter(k=>!ids.has(k)).length;
+  render();renderConfig();refreshMeter();
+  return unknown;
+}
+document.getElementById('cfgFile').onchange=e=>{const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const txt=(r.result||'').trim();
+    if(txt.startsWith('<')){ loadOpenXSAMpp(txt); return; }   // an OpenXSAM++ document
+    if(!MODEL){alert('load a model first');return;}
+    const n=applyConfig(JSON.parse(txt));                     // annotations JSON overlay
+    alert('config loaded'+(n?` (note: ${n} id(s) not found in this model — ignored)`:''));
+  }catch(err){alert('config load error: '+err.message);}
+  finally{e.target.value='';}};
+  r.readAsText(f);};
+document.getElementById('loadCfg').onclick=()=>document.getElementById('cfgFile').click();
+document.getElementById('saveCfg').onclick=()=>{
+  const blob=new Blob([JSON.stringify({config:CONFIG},null,1)],{type:'application/json'});
+  dl(blob,'uxv_annotations.json');
+};
+document.getElementById('genBtn').onclick=async()=>{
+  try{const d=await api('/api/openxsampp',modelBody());showModal('OpenXSAM++ (deterministic export)',d.xml,'system.openxsampp.xml');}
+  catch(e){alert('export failed: '+e.message);}
+};
+// ---- Scenarios-tab log (RAG queries + returned chunks) ----
+const scon=document.getElementById('scenConsole');
+function slog(msg,cls){scon.classList.remove('dim');const s=document.createElement('span');if(cls)s.className=cls;s.textContent=msg+'\n';scon.appendChild(s);scon.scrollTop=scon.scrollHeight;}
+document.getElementById('deriveScen').onclick=async()=>{
+  if(!MODEL){alert('load a model first (tab 1)');switchView('system');return;}
+  if(providerNeedsKey()&&!document.getElementById('apiKey').value.trim()){alert('enter the API key on tab 0 · Engine config');switchView('engine');return;}
+  const btn=document.getElementById('deriveScen');
+  try{
+    btn.disabled=true; scon.textContent=''; slog('deriving scenarios via Attack-RAG + LLM…','dim');
+    let result=null;
+    await streamNDJSON('/api/derive_scenarios',{
+      ...modelBody(), provider:currentProvider(),
+      baseUrl:document.getElementById('baseUrl').value.trim(),
+      model:document.getElementById('model').value.trim(),
+      apiKey:document.getElementById('apiKey').value.trim(),
+      useRag:document.getElementById('useRag').checked,
+      ragUrl:document.getElementById('ragUrl').value.trim(),
+    }, obj=>{
+      if(obj.type==='log') slog(obj.msg, logLevel(obj.level));
+      else if(obj.type==='error') slog('ERROR: '+obj.error,'err');
+      else if(obj.type==='result') result=obj;
+    });
+    if(result){
+      SCENARIOS=result.scenarios||[];
+      CONTEXTS=result.contexts||{};   // reused when you Run the engine
+      renderScenList();render();
+      slog(`✓ ${SCENARIOS.length} scenario(s) ready — RAG context cached for Run`,'ok');
+    }
+  }catch(e){slog('ERROR: '+e.message,'err');}
+  finally{btn.disabled=false;updateRunHint();}
+};
+document.getElementById('runBtn').onclick=runPipeline;
+['apiKey','model','baseUrl'].forEach(id=>document.getElementById(id).addEventListener('input',updateRunHint));
+document.getElementById('provider').addEventListener('change',()=>syncProviderUi(true));
+function updateRunHint(){const rb=document.getElementById('runBtn'),h=document.getElementById('runHint');if(!rb)return;
+  const hasModel=!!MODEL,needsKey=providerNeedsKey(),hasKey=!needsKey||!!document.getElementById('apiKey').value.trim(),
+        hasScen=SCENARIOS.length>0,hasBase=!providerNeedsBase()||!!document.getElementById('baseUrl').value.trim();
+  rb.disabled=!(hasModel&&hasKey&&hasBase);h.textContent=!hasModel?'load a model':!hasKey?'enter API key':!hasBase?'enter the API base URL':!hasScen?'no manual scenarios -> will auto-derive':`${SCENARIOS.length} scenario(s) ready`;}
+document.getElementById('viewJson').onclick=()=>{const i=+document.getElementById('treeSel').value||0;if(TREES[i])showModal('attack tree JSON',JSON.stringify(TREES[i].tree,null,2),'attack_tree.json');};
+document.getElementById('dlPng').onclick=downloadTreePng;
+document.getElementById('dlSvg').onclick=downloadTreeSvg;
+function downloadTreePng(){
+  if(tsvg.classList.contains('hidden')){alert('no tree to export — run the engine first');return;}
+  const svgStr=treeStandaloneSVG();
+  // Blob URL avoids btoa/encoding pitfalls; embedded <style> keeps the colors.
+  const url=URL.createObjectURL(new Blob([svgStr],{type:'image/svg+xml;charset=utf-8'}));
+  const img=new Image();
+  img.onload=()=>{
+    try{
+      const sc=2;
+      const W=img.width||parseFloat(tsvg.getAttribute('width'))||800;
+      const H=img.height||parseFloat(tsvg.getAttribute('height'))||600;
+      const c=document.createElement('canvas');c.width=W*sc;c.height=H*sc;
+      const ctx=c.getContext('2d');ctx.fillStyle='#0a0e14';ctx.fillRect(0,0,c.width,c.height);
+      ctx.scale(sc,sc);ctx.drawImage(img,0,0,W,H);
+      c.toBlob(b=>{ if(b) dl(b,'attack_tree.png'); else dlBlobSvg(svgStr); URL.revokeObjectURL(url); },'image/png');
+    }catch(err){ URL.revokeObjectURL(url);
+      alert('PNG rasterization failed ('+err.message+') — saving SVG instead.'); dlBlobSvg(svgStr); }
+  };
+  img.onerror=()=>{ URL.revokeObjectURL(url);
+    alert('Could not load the SVG image — saving SVG instead.'); dlBlobSvg(svgStr); };
+  img.src=url;
+}
+function showModal(title,text,name){document.getElementById('modalTitle').textContent=title;document.getElementById('modalPre').textContent=text;document.getElementById('modal').classList.add('show');document.getElementById('modal')._name=name;}
+function closeModal(){document.getElementById('modal').classList.remove('show');}
+function copyModal(){navigator.clipboard.writeText(document.getElementById('modalPre').textContent);}
+function dlModal(){dl(new Blob([document.getElementById('modalPre').textContent],{type:'text/plain'}),document.getElementById('modal')._name||'export.txt');}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href);}
+
+// ---------- init pan/zoom + wire zoom controls ----------
+(function initZoom(){
+  const stageEl=document.getElementById('stage'), treeStageEl=document.getElementById('treeStage');
+  sysPZ =makePanZoom(svg,  stageEl,     document.getElementById('zlvlSys'));
+  treePZ=makePanZoom(tsvg, treeStageEl, document.getElementById('zlvlTree'));
+  function wire(id, pz, resetFn){
+    document.getElementById(id).addEventListener('click',e=>{
+      const z=e.target.getAttribute('data-z'); if(!z)return;
+      if(z==='in') pz.zoomBtn(1.25); else if(z==='out') pz.zoomBtn(0.8); else resetFn();
+    });
+  }
+  wire('zoomSys',  sysPZ,  ()=>sysPZ.reset());   // DFD: reset = identity (viewBox already fits)
+  wire('zoomTree', treePZ, ()=>treePZ.fit());    // tree: reset = fit-to-view
+})();
+</script>
+</body>
+</html>

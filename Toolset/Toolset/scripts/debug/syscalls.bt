@@ -1,0 +1,3 @@
+/* Default bpftrace program (tool_id=bpftrace): count syscalls per process for 10s. */
+tracepoint:raw_syscalls:sys_enter { @[comm, args->id] = count(); }
+interval:s:10 { exit(); }

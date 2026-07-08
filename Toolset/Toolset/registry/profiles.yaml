@@ -1,0 +1,139 @@
+{
+  "profiles": [
+    {
+      "target_kind": "c",
+      "primary_tools": [
+        "cmake",
+        "make",
+        "ninja",
+        "aflpp",
+        "libfuzzer",
+        "asan",
+        "ubsan",
+        "gdb",
+        "strace",
+        "gcov",
+        "llvm_cov",
+        "honggfuzz",
+        "lldb",
+        "valgrind",
+        "ltrace"
+      ],
+      "fallback_tools": [
+        "git_apply",
+        "ctest",
+        "rr",
+        "bpftrace",
+        "codeql",
+        "semgrep",
+        "cppcheck"
+      ],
+      "network": "disabled"
+    },
+    {
+      "target_kind": "cxx",
+      "primary_tools": [
+        "cmake",
+        "make",
+        "ninja",
+        "aflpp",
+        "libfuzzer",
+        "asan",
+        "ubsan",
+        "gdb",
+        "strace",
+        "gcov",
+        "llvm_cov",
+        "honggfuzz",
+        "lldb",
+        "valgrind",
+        "ltrace"
+      ],
+      "fallback_tools": [
+        "git_apply",
+        "ctest",
+        "rr",
+        "bpftrace",
+        "codeql",
+        "semgrep",
+        "cppcheck"
+      ],
+      "network": "disabled"
+    },
+    {
+      "target_kind": "python",
+      "primary_tools": [
+        "pytest",
+        "git_apply",
+        "bandit",
+        "semgrep"
+      ],
+      "fallback_tools": [
+        "toolset_reporter"
+      ],
+      "network": "disabled"
+    },
+    {
+      "target_kind": "binary",
+      "primary_tools": [
+        "gdb",
+        "strace",
+        "aflpp"
+      ],
+      "fallback_tools": [
+        "toolset_reporter"
+      ],
+      "network": "disabled"
+    },
+    {
+      "target_kind": "java",
+      "primary_tools": [
+        "junit",
+        "semgrep",
+        "codeql"
+      ],
+      "fallback_tools": [
+        "git_apply"
+      ],
+      "network": "disabled"
+    },
+    {
+      "target_kind": "protocol",
+      "primary_tools": [
+        "nmap",
+        "mav_heartbeat",
+        "pymavlink_inject",
+        "mavproxy",
+        "gps_input_spoof",
+        "boofuzz",
+        "aflnet"
+      ],
+      "fallback_tools": [
+        "scapy",
+        "hping3",
+        "curl",
+        "ffuf",
+        "netcat",
+        "tcpdump"
+      ],
+      "network": "sandbox"
+    },
+    {
+      "target_kind": "generic",
+      "primary_tools": [
+        "nmap",
+        "hydra",
+        "suricata",
+        "snort"
+      ],
+      "fallback_tools": [
+        "curl",
+        "netcat",
+        "iptables",
+        "fail2ban",
+        "tcpdump"
+      ],
+      "network": "sandbox"
+    }
+  ]
+}

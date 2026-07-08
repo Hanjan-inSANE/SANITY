@@ -1,0 +1,18 @@
+# threat_modeler/pyproject.toml — 위협모델러(1)를 `threat_modeler` 로 설치(00 §1).
+# 폴더명은 threat_modeler 이지만 import 이름은 threat_modeler 여야 한다(기존 tests·launch.json·DAH 러너가 `import threat_modeler`).
+# 소스는 무수정(REQ §4.1) — 이 파일은 패키징 메타데이터일 뿐 코드가 아니다.
+# 설치:  pip install -e ./threat_modeler   → 이후 `import threat_modeler` 가능.
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "threat_modeler"
+version = "0.1.0"
+requires-python = ">=3.11"
+# 런타임 의존(anthropic/openai/requests 등)은 이미 환경에 있다고 가정한다(00 §1: 구현 완료 불변).
+
+[tool.setuptools]
+# 이 pyproject 기준 디렉터리(threat_modeler)의 *.py 를 threat_modeler 패키지로 사상(flat-layout rename).
+package-dir = {threat_modeler = "."}
+packages = ["threat_modeler"]

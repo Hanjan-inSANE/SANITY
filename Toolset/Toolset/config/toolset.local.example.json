@@ -1,0 +1,25 @@
+{
+  "tool_aliases": {
+    "afl-fuzz": "afl-fuzz",
+    "clang": "clang",
+    "cmake": "cmake",
+    "ctest": "ctest",
+    "gcov": "gcov",
+    "gdb": "gdb",
+    "git": "git",
+    "llvm-cov": "llvm-cov",
+    "make": "make",
+    "ninja": "ninja",
+    "python": "python",
+    "strace": "strace",
+    "valgrind": "valgrind"
+  },
+  "env": {
+    "TOOLSET_ENV_NAME": "local"
+  },
+  "notes": [
+    "Copy this file to Toolset/config/toolset.local.json on each host.",
+    "Use absolute paths when tools are not on PATH.",
+    "For wrapper commands, set a value to a list, for example: \"afl-fuzz\": [\"wsl\", \"-e\", \"afl-fuzz\"]."
+  ]
+}

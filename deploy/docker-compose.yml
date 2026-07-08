@@ -1,0 +1,102 @@
+# deploy/docker-compose.yml — SANITY 예선 전체 스택 (SR-DEPLOY-01, §00-2)
+# 기동:  docker compose --env-file .env up -d      검증:  docker compose config
+#
+# 6/7(gateway, gateway-db)은 gateway_log/gateway/docker-compose.yml 의 litellm/litellm-db 서비스와 동일(정본).
+# Attacker/Defender 는 여기서 정적 정의하지 않는다 — SM 의 Allocator(2.2)가 도커 SDK 로 동적 스폰한다
+#   (image=sanity_attacker:latest / sanity_defender:latest; 각 Dockerfile 로 사전 빌드 필요).
+# Toolset(8)은 서비스가 아니라 각 이미지에 포함된 stdio 자식이다(§00-8.1) — toolset-ws 공유 볼륨만 필요.
+#
+# ⚠ 명시적 name(§00-2 BLOCKER): Allocator._spawn_container(raw docker SDK)가 bare 이름
+#   "control"/"sanity-logs"/"toolset-ws" 로 네트워크·볼륨에 붙는다. compose 프로젝트 접두사(deploy_*)가
+#   붙으면 동적 스폰된 에이전트가 redis/gateway/toolset 을 DNS 로 못 찾고 로그도 유실된다(BLOCKER).
+#   → 아래 networks/volumes 에 name 을 고정하고, 프로젝트명도 name: sanity 로 고정한다.
+name: sanity
+
+services:
+  redis:                          # 메시지 버스(Streams) + State Store (§00-5/6)
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    networks: [control]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  gateway:                        # 6. LLM Gateway = gateway_log/gateway 의 litellm 서비스(정본)
+    image: ghcr.io/berriai/litellm:main-stable
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    ports: ["4000:4000"]
+    environment:
+      DATABASE_URL: postgresql://litellm:litellm@gateway-db:5432/litellm
+      SANITY_LITELLM_MASTER_KEY: ${SANITY_LITELLM_MASTER_KEY}
+      # ⚠ 진짜 프로바이더 키는 오직 이 프록시 컨테이너에만 존재한다(에이전트/SM 엔 절대 X, SR-STACK-02).
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
+    volumes:
+      - "../gateway_log/gateway/config.yaml:/app/config.yaml:ro"   # LiteLLM 라우팅표(정본)
+    networks: [control]
+    depends_on:
+      gateway-db: { condition: service_healthy }
+    healthcheck:                  # V-GW-0: 창구 생존(curl 부재 대비 python)
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:4000/health/liveliness')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  gateway-db:                     # LiteLLM virtual key/예산 저장(Postgres)
+    image: postgres:17
+    environment:
+      POSTGRES_USER: litellm
+      POSTGRES_PASSWORD: litellm
+      POSTGRES_DB: litellm
+    networks: [control]
+    volumes:
+      - "gateway-pg:/var/lib/postgresql/data"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  target-sitl-a:                  # 9. Target: DVD SITL(로직 공격용) — 격리 네트워크
+    build:
+      context: ../sanity_infra/target
+    networks: [target]
+
+  target-sitl-b:                  # 9. Target: DVD SITL(로직 방어검증용 2번째 인스턴스, §00-10)
+    build:
+      context: ../sanity_infra/target
+    networks: [target]
+
+  scenario-manager:               # 2. Scenario Manager (트리당 1; Allocator가 에이전트 동적 스폰)
+    build:
+      context: ..                                 # 빌드 컨텍스트=리포지토리 루트(모노레포 전체 COPY)
+      dockerfile: sanity_scenario_manager/Dockerfile
+    depends_on:
+      redis:   { condition: service_started }
+      gateway: { condition: service_healthy }
+    networks: [control]
+    environment:
+      SANITY_LOG_DIR: /logs                       # LogWriter 출력(§00-9)
+      TOOLSET_ROOT: /opt/Toolset                  # stdio Toolset PYTHONPATH(§00-8.5), cfg 기본과 정합
+      REDIS_URL_BUS: redis://redis:6379/0
+      REDIS_URL_STATE: redis://redis:6379/1
+      LITELLM_API_BASE: http://gateway:4000       # = cfg.gateway_url
+      # SM/Allocator 는 가상키 발급(issue_key)을 위해 마스터키만 필요. 프로바이더 키는 미주입(SR-STACK-02).
+      SANITY_LITELLM_MASTER_KEY: ${SANITY_LITELLM_MASTER_KEY}
+    volumes:
+      - "sanity-logs:/logs"                       # Log(7) 공유 JSONL 볼륨(동적 에이전트도 마운트)
+      - "toolset-ws:/workspaces"                  # Toolset workspace 공유(Allocator↔에이전트)
+      - "/var/run/docker.sock:/var/run/docker.sock"   # Allocator 동적 스폰(§02-5.5)
+
+networks:
+  control: { name: control }                      # 제어 평면(redis/gateway) — bare 이름 고정
+  target:  { name: target, internal: true }       # target: 인터넷·제어평면 격리(SR-SEC-02)
+
+volumes:
+  sanity-logs: { name: sanity-logs }              # Log(7) 공유 JSONL
+  toolset-ws:  { name: toolset-ws }               # Toolset workspace 공유
+  gateway-pg:  { name: gateway-pg }               # LiteLLM Postgres 영속

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Threat Modeler: skeleton=ASRG/openXSAM XSD; Software/Hardware/Interface=DefenseWeaver Sec. IV-B1; blank->unspecified -->
+<OpenXSAMpp version="0.2-threat_modeler"><SystemChunk name="Components"><Elements>
+  <Component id="9c50a71c-0002-4002-8002-000000000002" name="Ground Control Station (QGroundControl)" type="Process">
+    <Diagram left="40" top="40" width="190" height="64"/>
+    <Software>
+      <OS>Operator ground station host (Linux)</OS>
+      <SBOM>
+        <Item>QGroundControl 4.x</Item>
+      </SBOM>
+      <Services>
+        <Service>MAVLink client over the telemetry link (UDP 14550)</Service>
+        <Service>video sink (RTSP/UDP)</Service>
+      </Services></Software>
+    <Hardware><Chips><!--unspecified-->
+      </Chips>
+      <Modules><!--unspecified-->
+      </Modules>
+      <Debug>unspecified</Debug></Hardware>
+  </Component>
+  <Component id="c0119a11-0003-4003-8003-000000000003" name="Companion Computer" type="Process">
+    <Diagram left="300" top="130" width="200" height="64"/>
+    <Software>
+      <OS>Onboard Linux single-board computer</OS>
+      <SBOM>
+        <Item>MAVProxy (MAVLink router/proxy)</Item>
+        <Item>mavlink-router</Item>
+        <Item>hostapd (drone wireless access point)</Item>
+        <Item>dnsmasq (DHCP/DNS for the drone link)</Item>
+        <Item>GStreamer (RTSP video pipeline)</Item>
+        <Item>onboard web/telemetry service (Flask)</Item>
+        <Item>OpenSSH server</Item>
+      </SBOM>
+      <Services>
+        <Service>wireless access point for the telemetry link (hostapd)</Service>
+        <Service>MAVLink routing: telemetry link UDP 14550 &lt;-&gt; flight controller TCP 5760</Service>
+        <Service>RTSP video stream</Service>
+        <Service>HTTP onboard web console</Service>
+        <Service>SSH (management)</Service>
+      </Services></Software>
+    <Hardware><Chips><!--unspecified-->
+      </Chips>
+      <Modules>
+        <Module>companion single-board computer</Module>
+        <Module>wireless radio serving the drone link</Module>
+      </Modules>
+      <Debug>SSH access (weak/default credentials)</Debug></Hardware>
+  </Component>
+  <Component id="f11c7c71-0004-4004-8004-000000000004" name="Flight Controller (ArduCopter Autopilot)" type="Process">
+    <Diagram left="560" top="130" width="200" height="64"/>
+    <Software>
+      <OS>ArduCopter 4.x autopilot firmware</OS>
+      <SBOM>
+        <Item>ArduCopter 4.x</Item>
+        <Item>MAVLink v2</Item>
+        <Item>EKF3 state estimator</Item>
+        <Item>parameter subsystem</Item>
+        <Item>mission / command_long / rc_override / gps_input handlers</Item>
+      </SBOM>
+      <Services>
+        <Service>MAVLink v2 (unauthenticated)</Service>
+        <Service>parameter protocol (PARAM_SET / PARAM_REQUEST)</Service>
+        <Service>mission protocol (waypoint upload)</Service>
+        <Service>COMMAND_LONG (arm/disarm, mode, RTL, takeoff)</Service>
+        <Service>RC_CHANNELS_OVERRIDE</Service>
+        <Service>GPS_INPUT (external position injection)</Service>
+      </Services></Software>
+    <Hardware><Chips>
+        <Chip>flight-management-unit MCU (autopilot board)</Chip>
+      </Chips>
+      <Modules>
+        <Module>consumes IMU / barometer / magnetometer / GPS from the sensor suite</Module>
+        <Module>drives motor/ESC outputs to the airframe</Module>
+      </Modules>
+      <Debug>autopilot console / MAVProxy shell</Debug></Hardware>
+  </Component>
+  <Component id="6a2eb000-0005-4005-8005-000000000005" name="Airframe, Sensors &amp; Actuators" type="Process">
+    <Diagram left="820" top="130" width="200" height="64"/>
+    <Software>
+      <OS>unspecified</OS>
+      <SBOM>
+        <Item>quadcopter airframe (Iris-class)</Item>
+        <Item>IMU / barometer / magnetometer</Item>
+        <Item>GPS / GNSS receiver</Item>
+        <Item>4x brushless motors + ESCs</Item>
+      </SBOM>
+      <Services>
+        <Service>sensor data to the flight controller (attitude, altitude, heading, position)</Service>
+        <Service>actuator commands from the flight controller (motor outputs)</Service>
+      </Services></Software>
+    <Hardware><Chips><!--unspecified-->
+      </Chips>
+      <Modules>
+        <Module>airframe + 4 brushless motors + sensor suite</Module>
+      </Modules>
+      <Debug>unspecified</Debug></Hardware>
+  </Component>
+</Elements></SystemChunk><SystemChunk name="Channels"><Elements>
+  <Channel id="c4a11e02-0012-4012-8012-000000000012" name="wireless MAVLink telemetry link"><Endpoints><ComponentRef target="9c50a71c-0002-4002-8002-000000000002"/><ComponentRef target="c0119a11-0003-4003-8003-000000000003"/></Endpoints>
+    <Technologies><TechnologyRef>wireless MAVLink telemetry (RF link; realized as simulated WiFi 802.11)</TechnologyRef></Technologies><Interface>MAVLink v2 over UDP:14550 (unauthenticated)</Interface>
+    <DataFlows><DataFlow dataflowSource="9c50a71c-0002-4002-8002-000000000002" dataFlowTarget="c0119a11-0003-4003-8003-000000000003" name="GCS commands and telemetry"/></DataFlows></Channel>
+  <Channel id="c4a11e03-0013-4013-8013-000000000013" name="onboard MAVLink link"><Endpoints><ComponentRef target="c0119a11-0003-4003-8003-000000000003"/><ComponentRef target="f11c7c71-0004-4004-8004-000000000004"/></Endpoints>
+    <Technologies><TechnologyRef>onboard MAVLink transport (MAVProxy / mavlink-router)</TechnologyRef></Technologies><Interface>MAVLink v2 to the flight controller over TCP:5760 (unauthenticated)</Interface>
+    <DataFlows><DataFlow dataflowSource="c0119a11-0003-4003-8003-000000000003" dataFlowTarget="f11c7c71-0004-4004-8004-000000000004" name="routed MAVLink command stream"/></DataFlows></Channel>
+  <Channel id="c4a11e04-0014-4014-8014-000000000014" name="sensor &amp; actuator link"><Endpoints><ComponentRef target="6a2eb000-0005-4005-8005-000000000005"/><ComponentRef target="f11c7c71-0004-4004-8004-000000000004"/></Endpoints>
+    <Technologies><TechnologyRef>onboard sensor/actuator I/O (internal to the drone)</TechnologyRef></Technologies><Interface>sensor feed (IMU/baro/mag/GPS) in, motor outputs out. GPS position is influenceable via MAVLink GPS_INPUT at the flight controller.</Interface>
+    <DataFlows><DataFlow dataflowSource="6a2eb000-0005-4005-8005-000000000005" dataFlowTarget="f11c7c71-0004-4004-8004-000000000004" name="sensor data (IMU/baro/mag/GPS)"/></DataFlows></Channel>
+</Elements></SystemChunk></OpenXSAMpp>

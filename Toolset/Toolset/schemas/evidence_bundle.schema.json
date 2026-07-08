@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dah.local/toolset/schemas/evidence_bundle.schema.json",
+  "title": "DefenseEvidenceBundle v1",
+  "type": "object",
+  "required": [
+    "bundle_id",
+    "trace_id",
+    "created_at",
+    "verdict",
+    "pov_ref",
+    "patch_ref",
+    "baseline_result_ref",
+    "patched_result_ref",
+    "test_result_refs",
+    "trace_refs",
+    "coverage_refs",
+    "artifact_hashes",
+    "ledger_refs"
+  ],
+  "properties": {
+    "bundle_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string"},
+    "verdict": {
+      "type": "string",
+      "enum": ["defense_verified", "defense_failed", "incomplete", "unknown"]
+    },
+    "pov_ref": {"type": ["string", "null"]},
+    "patch_ref": {"type": ["string", "null"]},
+    "baseline_result_ref": {"type": ["string", "null"]},
+    "patched_result_ref": {"type": ["string", "null"]},
+    "test_result_refs": {"type": "array", "items": {"type": "string"}},
+    "trace_refs": {"type": "array", "items": {"type": "string"}},
+    "coverage_refs": {"type": "array", "items": {"type": "string"}},
+    "artifact_hashes": {"type": "object", "additionalProperties": {"type": "string"}},
+    "ledger_refs": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

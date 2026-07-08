@@ -1,0 +1,8 @@
+# Default batch LLDB script (tool_id=lldb).
+settings set stop-line-count-after 0
+run
+script print("==== BACKTRACE ====")
+bt all
+script print("==== REGISTERS ====")
+register read
+quit

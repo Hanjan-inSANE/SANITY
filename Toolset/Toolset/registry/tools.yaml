@@ -1,0 +1,2845 @@
+[
+  {
+    "tool_id": "cmake",
+    "display_name": "CMake",
+    "kind": "builder",
+    "phase": [
+      "build"
+    ],
+    "supported_target": [
+      "c",
+      "cxx"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "cmake"
+      ],
+      "command_template": [
+        "cmake",
+        "-S",
+        "{source_dir}",
+        "-B",
+        "{build_dir}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/cmake.schema.json",
+    "output_schema_ref": "schemas/outputs/build_result.schema.json",
+    "required_artifacts": [
+      "target_ref"
+    ],
+    "produced_artifacts": [
+      "build_ref",
+      "build_log_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "cmake",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 1200,
+    "resource_limits": {
+      "cpu": 4,
+      "memory_mb": 8192,
+      "disk_mb": 20480
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://cmake.org/cmake/help/latest/manual/cmake.1.html",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "make",
+    "display_name": "GNU Make",
+    "kind": "builder",
+    "phase": [
+      "build"
+    ],
+    "supported_target": [
+      "c",
+      "cxx"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "make"
+      ],
+      "command_template": [
+        "make",
+        "-C",
+        "{build_dir}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/make.schema.json",
+    "output_schema_ref": "schemas/outputs/build_result.schema.json",
+    "required_artifacts": [
+      "target_ref"
+    ],
+    "produced_artifacts": [
+      "build_ref",
+      "build_log_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "make",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 1200,
+    "resource_limits": {
+      "cpu": 4,
+      "memory_mb": 8192,
+      "disk_mb": 20480
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://www.gnu.org/software/make/manual/make.html",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "ninja",
+    "display_name": "Ninja",
+    "kind": "builder",
+    "phase": [
+      "build"
+    ],
+    "supported_target": [
+      "c",
+      "cxx"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "ninja"
+      ],
+      "command_template": [
+        "ninja",
+        "-C",
+        "{build_dir}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/ninja.schema.json",
+    "output_schema_ref": "schemas/outputs/build_result.schema.json",
+    "required_artifacts": [
+      "target_ref"
+    ],
+    "produced_artifacts": [
+      "build_ref",
+      "build_log_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "ninja",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 1200,
+    "resource_limits": {
+      "cpu": 4,
+      "memory_mb": 8192,
+      "disk_mb": 20480
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://ninja-build.org/manual.html",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "ctest",
+    "display_name": "CTest",
+    "kind": "test_runner",
+    "phase": [
+      "regression_test"
+    ],
+    "supported_target": [
+      "c",
+      "cxx"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "ctest"
+      ],
+      "command_template": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure"
+      ]
+    },
+    "params_schema_ref": "schemas/params/ctest.schema.json",
+    "output_schema_ref": "schemas/outputs/test_result.schema.json",
+    "required_artifacts": [
+      "build_ref"
+    ],
+    "produced_artifacts": [
+      "test_result_ref",
+      "test_log_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "ctest",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://cmake.org/cmake/help/latest/manual/ctest.1.html",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "pytest",
+    "display_name": "pytest",
+    "kind": "test_runner",
+    "phase": [
+      "regression_test"
+    ],
+    "supported_target": [
+      "python",
+      "c",
+      "cxx"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "python"
+      ],
+      "command_template": [
+        "python",
+        "-m",
+        "pytest",
+        "{test_dir}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/pytest.schema.json",
+    "output_schema_ref": "schemas/outputs/test_result.schema.json",
+    "required_artifacts": [
+      "target_ref"
+    ],
+    "produced_artifacts": [
+      "test_result_ref",
+      "test_log_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://docs.pytest.org/",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "aflpp",
+    "display_name": "AFL++",
+    "kind": "fuzzer",
+    "phase": [
+      "attack_discovery"
+    ],
+    "supported_target": [
+      "c",
+      "cxx",
+      "binary"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "afl-fuzz"
+      ],
+      "command_template": [
+        "afl-fuzz",
+        "-i",
+        "{seeds_dir}",
+        "-o",
+        "{output_dir}",
+        "--",
+        "{target_cmd}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/aflpp.schema.json",
+    "output_schema_ref": "schemas/outputs/fuzz_job.schema.json",
+    "required_artifacts": [
+      "harness_ref",
+      "build_ref"
+    ],
+    "produced_artifacts": [
+      "fuzz_job_ref",
+      "crash_ref",
+      "seed_corpus_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "afl-fuzz",
+        "-V"
+      ]
+    },
+    "timeout_sec_default": 3600,
+    "resource_limits": {
+      "cpu": 4,
+      "memory_mb": 8192,
+      "disk_mb": 20480
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://aflplus.plus/docs/",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "libfuzzer",
+    "display_name": "libFuzzer",
+    "kind": "fuzzer",
+    "phase": [
+      "attack_discovery"
+    ],
+    "supported_target": [
+      "c",
+      "cxx"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "target_binary"
+      ],
+      "command_template": [
+        "{target_binary}",
+        "{corpus_dir}",
+        "-max_total_time={max_total_time}",
+        "-runs={runs}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/libfuzzer.schema.json",
+    "output_schema_ref": "schemas/outputs/fuzz_job.schema.json",
+    "required_artifacts": [
+      "harness_ref",
+      "build_ref"
+    ],
+    "produced_artifacts": [
+      "fuzz_job_ref",
+      "crash_ref",
+      "seed_corpus_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "clang",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 3600,
+    "resource_limits": {
+      "cpu": 4,
+      "memory_mb": 8192,
+      "disk_mb": 20480
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://llvm.org/docs/LibFuzzer.html",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "gdb",
+    "display_name": "GDB",
+    "kind": "debugger",
+    "phase": [
+      "debug"
+    ],
+    "supported_target": [
+      "c",
+      "cxx",
+      "binary"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "gdb"
+      ],
+      "command_template": [
+        "gdb",
+        "--batch",
+        "-x",
+        "{toolset_root}/scripts/debug/default.gdb",
+        "--args",
+        "{target_binary}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/gdb.schema.json",
+    "output_schema_ref": "schemas/outputs/debug_trace.schema.json",
+    "required_artifacts": [
+      "pov_ref",
+      "build_ref"
+    ],
+    "produced_artifacts": [
+      "debug_trace_ref",
+      "stacktrace_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "gdb",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 4096,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://sourceware.org/gdb/current/onlinedocs/gdb.html/",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "strace",
+    "display_name": "strace",
+    "kind": "tracer",
+    "phase": [
+      "runtime_trace"
+    ],
+    "supported_target": [
+      "c",
+      "cxx",
+      "binary",
+      "protocol_daemon"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "strace"
+      ],
+      "command_template": [
+        "strace",
+        "-f",
+        "-o",
+        "{trace_log}",
+        "{target_binary}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/strace.schema.json",
+    "output_schema_ref": "schemas/outputs/runtime_trace.schema.json",
+    "required_artifacts": [
+      "pov_ref",
+      "build_ref"
+    ],
+    "produced_artifacts": [
+      "runtime_trace_ref",
+      "syscall_log_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "strace",
+        "-V"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 4096,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://man7.org/linux/man-pages/man1/strace.1.html",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "asan",
+    "display_name": "AddressSanitizer",
+    "kind": "sanitizer",
+    "phase": [
+      "memory_check"
+    ],
+    "supported_target": [
+      "c",
+      "cxx"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "target_binary"
+      ],
+      "command_template": [
+        "{target_binary}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/sanitizer.schema.json",
+    "output_schema_ref": "schemas/outputs/sanitizer_report.schema.json",
+    "required_artifacts": [
+      "build_ref"
+    ],
+    "produced_artifacts": [
+      "sanitizer_report_ref",
+      "finding_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "clang",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 4096,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://clang.llvm.org/docs/AddressSanitizer.html",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "ubsan",
+    "display_name": "UndefinedBehaviorSanitizer",
+    "kind": "sanitizer",
+    "phase": [
+      "undefined_behavior_check"
+    ],
+    "supported_target": [
+      "c",
+      "cxx"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "target_binary"
+      ],
+      "command_template": [
+        "{target_binary}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/sanitizer.schema.json",
+    "output_schema_ref": "schemas/outputs/sanitizer_report.schema.json",
+    "required_artifacts": [
+      "build_ref"
+    ],
+    "produced_artifacts": [
+      "sanitizer_report_ref",
+      "finding_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "clang",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 4096,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "gcov",
+    "display_name": "gcov",
+    "kind": "coverage",
+    "phase": [
+      "coverage"
+    ],
+    "supported_target": [
+      "c",
+      "cxx"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "gcov"
+      ],
+      "command_template": [
+        "gcov",
+        "{object_or_source}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/gcov.schema.json",
+    "output_schema_ref": "schemas/outputs/coverage_report.schema.json",
+    "required_artifacts": [
+      "build_ref"
+    ],
+    "produced_artifacts": [
+      "coverage_report_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "gcov",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://gcc.gnu.org/onlinedocs/gcc/Gcov.html",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "llvm_cov",
+    "display_name": "llvm-cov",
+    "kind": "coverage",
+    "phase": [
+      "coverage"
+    ],
+    "supported_target": [
+      "c",
+      "cxx"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "llvm-cov"
+      ],
+      "command_template": [
+        "llvm-cov",
+        "show",
+        "{target_binary}",
+        "-instr-profile={profile_data}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/llvm_cov.schema.json",
+    "output_schema_ref": "schemas/outputs/coverage_report.schema.json",
+    "required_artifacts": [
+      "build_ref"
+    ],
+    "produced_artifacts": [
+      "coverage_report_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "llvm-cov",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://clang.llvm.org/docs/SourceBasedCodeCoverage.html",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "git_apply",
+    "display_name": "git apply",
+    "kind": "patcher",
+    "phase": [
+      "patch"
+    ],
+    "supported_target": [
+      "c",
+      "cxx",
+      "python",
+      "java",
+      "generic_source"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "git"
+      ],
+      "command_template": [
+        "git",
+        "apply",
+        "--check",
+        "{patch_path}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/patch.schema.json",
+    "output_schema_ref": "schemas/outputs/patch_result.schema.json",
+    "required_artifacts": [
+      "patch_ref"
+    ],
+    "produced_artifacts": [
+      "patch_apply_result_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "git",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 120,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://git-scm.com/docs/git-apply",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "toolset_reporter",
+    "display_name": "Toolset Evidence Reporter",
+    "kind": "reporter",
+    "phase": [
+      "report"
+    ],
+    "supported_target": [
+      "generic"
+    ],
+    "execution": {
+      "mode": "internal",
+      "entrypoint": [
+        "toolset.generate_report"
+      ],
+      "command_template": [
+        "toolset.generate_report",
+        "{bundle_ref}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/report.schema.json",
+    "output_schema_ref": "schemas/outputs/report.schema.json",
+    "required_artifacts": [
+      "evidence_bundle_ref"
+    ],
+    "produced_artifacts": [
+      "report_ref"
+    ],
+    "availability_probe": {
+      "command": [
+        "internal"
+      ]
+    },
+    "timeout_sec_default": 60,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 1024,
+      "disk_mb": 1024
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": false,
+      "capture_stderr": false,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "Toolset/TOOLSET_구현지침.md",
+    "priority": "P0"
+  },
+  {
+    "tool_id": "junit",
+    "display_name": "JUnit (via Maven/Gradle)",
+    "kind": "test_runner",
+    "phase": [
+      "regression_test"
+    ],
+    "supported_target": [
+      "java"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "mvn"
+      ],
+      "command_template": [
+        "mvn",
+        "-q",
+        "test"
+      ]
+    },
+    "params_schema_ref": "schemas/params/junit.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "source"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "mvn",
+        "-version"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://junit.org/junit5/docs/current/user-guide/",
+    "priority": "P1"
+  },
+  {
+    "tool_id": "honggfuzz",
+    "display_name": "honggfuzz",
+    "kind": "fuzzer",
+    "phase": [
+      "attack_discovery"
+    ],
+    "supported_target": [
+      "c",
+      "cxx",
+      "binary"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "honggfuzz"
+      ],
+      "command_template": [
+        "honggfuzz",
+        "-i",
+        "{seeds_dir}",
+        "-W",
+        "{out_dir}",
+        "--",
+        "{target_cmd}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/honggfuzz.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "build",
+      "seeds"
+    ],
+    "produced_artifacts": [
+      "crashes_dir"
+    ],
+    "availability_probe": {
+      "command": [
+        "honggfuzz",
+        "--help"
+      ]
+    },
+    "timeout_sec_default": 3600,
+    "resource_limits": {
+      "cpu": 4,
+      "memory_mb": 8192,
+      "disk_mb": 20480
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://github.com/google/honggfuzz/blob/master/docs/USAGE.md",
+    "priority": "P1"
+  },
+  {
+    "tool_id": "lldb",
+    "display_name": "LLDB",
+    "kind": "debugger",
+    "phase": [
+      "debug"
+    ],
+    "supported_target": [
+      "c",
+      "cxx",
+      "binary"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "lldb"
+      ],
+      "command_template": [
+        "lldb",
+        "--batch",
+        "-s",
+        "{toolset_root}/scripts/debug/default.lldb",
+        "{binary}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/lldb.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "binary",
+      "pov_input"
+    ],
+    "produced_artifacts": [
+      "trace_log"
+    ],
+    "availability_probe": {
+      "command": [
+        "lldb",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://lldb.llvm.org/use/tutorial.html",
+    "priority": "P1"
+  },
+  {
+    "tool_id": "rr",
+    "display_name": "rr (record/replay)",
+    "kind": "debugger",
+    "phase": [
+      "debug"
+    ],
+    "supported_target": [
+      "c",
+      "cxx",
+      "binary"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "rr"
+      ],
+      "command_template": [
+        "rr",
+        "record",
+        "{target_cmd}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/rr.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "binary",
+      "pov_input"
+    ],
+    "produced_artifacts": [
+      "trace_log"
+    ],
+    "availability_probe": {
+      "command": [
+        "rr",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://rr-project.org/",
+    "priority": "P1"
+  },
+  {
+    "tool_id": "ltrace",
+    "display_name": "ltrace",
+    "kind": "tracer",
+    "phase": [
+      "runtime_trace"
+    ],
+    "supported_target": [
+      "binary"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "ltrace"
+      ],
+      "command_template": [
+        "ltrace",
+        "-f",
+        "-o",
+        "{trace_log}",
+        "--",
+        "{target_cmd}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/ltrace.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "binary",
+      "pov_input"
+    ],
+    "produced_artifacts": [
+      "trace_log"
+    ],
+    "availability_probe": {
+      "command": [
+        "ltrace",
+        "-V"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://man7.org/linux/man-pages/man1/ltrace.1.html",
+    "priority": "P1"
+  },
+  {
+    "tool_id": "bpftrace",
+    "display_name": "bpftrace",
+    "kind": "tracer",
+    "phase": [
+      "runtime_trace"
+    ],
+    "supported_target": [
+      "binary",
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "bpftrace"
+      ],
+      "command_template": [
+        "bpftrace",
+        "{toolset_root}/scripts/debug/syscalls.bt"
+      ]
+    },
+    "params_schema_ref": "schemas/params/bpftrace.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "binary"
+    ],
+    "produced_artifacts": [
+      "trace_log"
+    ],
+    "availability_probe": {
+      "command": [
+        "bpftrace",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://bpftrace.org/docs/",
+    "priority": "P1"
+  },
+  {
+    "tool_id": "valgrind",
+    "display_name": "Valgrind Memcheck",
+    "kind": "sanitizer",
+    "phase": [
+      "memory_check"
+    ],
+    "supported_target": [
+      "binary"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "valgrind"
+      ],
+      "command_template": [
+        "valgrind",
+        "--error-exitcode=1",
+        "--leak-check=full",
+        "{target_cmd}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/valgrind.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "binary",
+      "pov_input"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "valgrind",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://valgrind.org/docs/manual/mc-manual.html",
+    "priority": "P1"
+  },
+  {
+    "tool_id": "codeql",
+    "display_name": "CodeQL",
+    "kind": "static_analyzer",
+    "phase": [
+      "static_scan"
+    ],
+    "supported_target": [
+      "c",
+      "cxx",
+      "python",
+      "java"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "codeql"
+      ],
+      "command_template": [
+        "codeql",
+        "database",
+        "analyze",
+        "{db_dir}",
+        "--format=sarif-latest",
+        "--output",
+        "{report}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/codeql.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "source"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "codeql",
+        "version"
+      ]
+    },
+    "timeout_sec_default": 900,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://codeql.github.com/docs/",
+    "priority": "P1"
+  },
+  {
+    "tool_id": "semgrep",
+    "display_name": "Semgrep",
+    "kind": "static_analyzer",
+    "phase": [
+      "static_scan"
+    ],
+    "supported_target": [
+      "c",
+      "cxx",
+      "python",
+      "java",
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "semgrep"
+      ],
+      "command_template": [
+        "semgrep",
+        "--config",
+        "{ruleset}",
+        "--json",
+        "--output",
+        "{report}",
+        "{source_dir}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/semgrep.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "source"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "semgrep",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 900,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "loopback",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://semgrep.dev/docs/",
+    "priority": "P1"
+  },
+  {
+    "tool_id": "cppcheck",
+    "display_name": "cppcheck",
+    "kind": "static_analyzer",
+    "phase": [
+      "static_scan"
+    ],
+    "supported_target": [
+      "c",
+      "cxx"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "cppcheck"
+      ],
+      "command_template": [
+        "cppcheck",
+        "--enable=all",
+        "--xml",
+        "--output-file={report}",
+        "{source_dir}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/cppcheck.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "source"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "cppcheck",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 900,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://cppcheck.sourceforge.io/manual.pdf",
+    "priority": "P1"
+  },
+  {
+    "tool_id": "bandit",
+    "display_name": "Bandit",
+    "kind": "static_analyzer",
+    "phase": [
+      "static_scan"
+    ],
+    "supported_target": [
+      "python"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "bandit"
+      ],
+      "command_template": [
+        "bandit",
+        "-r",
+        "{source_dir}",
+        "-f",
+        "json",
+        "-o",
+        "{report}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/bandit.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "source"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "bandit",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 900,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "disabled",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://bandit.readthedocs.io/",
+    "priority": "P1"
+  },
+  {
+    "tool_id": "nmap",
+    "display_name": "Nmap",
+    "kind": "network_scanner",
+    "phase": [
+      "recon"
+    ],
+    "supported_target": [
+      "protocol",
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "nmap"
+      ],
+      "command_template": [
+        "nmap",
+        "-sV",
+        "-p-",
+        "-oX",
+        "{report}",
+        "{scan_target}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/nmap.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "nmap",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://nmap.org/book/man.html",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "mav_heartbeat",
+    "display_name": "MAVLink heartbeat listener",
+    "kind": "network_scanner",
+    "phase": [
+      "recon"
+    ],
+    "supported_target": [
+      "protocol"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "python"
+      ],
+      "command_template": [
+        "python",
+        "{toolset_root}/scripts/mavlink/heartbeat.py",
+        "--conn",
+        "{mav_endpoint}",
+        "--timeout",
+        "{sec}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/mav_heartbeat.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "python",
+        "-c",
+        "import pymavlink"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://mavlink.io/en/mavgen_python/",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "pymavlink_inject",
+    "display_name": "MAVLink command injector",
+    "kind": "network_attacker",
+    "phase": [
+      "attack_execution"
+    ],
+    "supported_target": [
+      "protocol"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "python"
+      ],
+      "command_template": [
+        "python",
+        "{toolset_root}/scripts/mavlink/inject.py",
+        "--conn",
+        "{mav_endpoint}",
+        "--sys",
+        "{target_system}",
+        "--comp",
+        "{target_component}",
+        "--msg",
+        "{mav_msg}",
+        "--params",
+        "{params_json}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/pymavlink_inject.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report",
+      "trace_log"
+    ],
+    "availability_probe": {
+      "command": [
+        "python",
+        "-c",
+        "import pymavlink"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://mavlink.io/en/messages/common.html",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "mavproxy",
+    "display_name": "MAVProxy",
+    "kind": "network_attacker",
+    "phase": [
+      "attack_execution"
+    ],
+    "supported_target": [
+      "protocol"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "mavproxy.py"
+      ],
+      "command_template": [
+        "mavproxy.py",
+        "--master",
+        "{mav_endpoint}",
+        "--cmd",
+        "{mav_cmd}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/mavproxy.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "mavproxy.py",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://ardupilot.org/mavproxy/",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "gps_input_spoof",
+    "display_name": "GPS_INPUT spoofer",
+    "kind": "network_attacker",
+    "phase": [
+      "attack_execution"
+    ],
+    "supported_target": [
+      "protocol"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "python"
+      ],
+      "command_template": [
+        "python",
+        "{toolset_root}/scripts/mavlink/gps_spoof.py",
+        "--conn",
+        "{mav_endpoint}",
+        "--lat",
+        "{lat}",
+        "--lon",
+        "{lon}",
+        "--rate",
+        "{hz}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/gps_input_spoof.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report",
+      "trace_log"
+    ],
+    "availability_probe": {
+      "command": [
+        "python",
+        "-c",
+        "import pymavlink"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://mavlink.io/en/messages/common.html#GPS_INPUT",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "boofuzz",
+    "display_name": "boofuzz",
+    "kind": "fuzzer",
+    "phase": [
+      "attack_discovery"
+    ],
+    "supported_target": [
+      "protocol"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "python"
+      ],
+      "command_template": [
+        "python",
+        "{toolset_root}/scripts/net/boofuzz_session.py",
+        "--host",
+        "{scan_target}",
+        "--port",
+        "{port}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/boofuzz.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target",
+      "seeds"
+    ],
+    "produced_artifacts": [
+      "crashes_dir",
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "python",
+        "-c",
+        "import boofuzz"
+      ]
+    },
+    "timeout_sec_default": 3600,
+    "resource_limits": {
+      "cpu": 4,
+      "memory_mb": 8192,
+      "disk_mb": 20480
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://boofuzz.readthedocs.io/",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "aflnet",
+    "display_name": "AFLNet",
+    "kind": "fuzzer",
+    "phase": [
+      "attack_discovery"
+    ],
+    "supported_target": [
+      "protocol"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "afl-fuzz"
+      ],
+      "command_template": [
+        "afl-fuzz",
+        "-i",
+        "{seeds_dir}",
+        "-o",
+        "{out_dir}",
+        "-N",
+        "{net_config}",
+        "--",
+        "{target_cmd}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/aflnet.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "build",
+      "seeds"
+    ],
+    "produced_artifacts": [
+      "crashes_dir"
+    ],
+    "availability_probe": {
+      "command": [
+        "afl-fuzz",
+        "-h"
+      ]
+    },
+    "timeout_sec_default": 3600,
+    "resource_limits": {
+      "cpu": 4,
+      "memory_mb": 8192,
+      "disk_mb": 20480
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://github.com/aflnet/aflnet",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "scapy",
+    "display_name": "Scapy",
+    "kind": "network_attacker",
+    "phase": [
+      "attack_execution"
+    ],
+    "supported_target": [
+      "protocol",
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "python"
+      ],
+      "command_template": [
+        "python",
+        "{toolset_root}/scripts/net/scapy_attack.py",
+        "--iface",
+        "{iface}",
+        "--target",
+        "{scan_target}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/scapy.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "python",
+        "-c",
+        "import scapy"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://scapy.readthedocs.io/",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "hping3",
+    "display_name": "hping3",
+    "kind": "network_attacker",
+    "phase": [
+      "attack_execution"
+    ],
+    "supported_target": [
+      "protocol",
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "hping3"
+      ],
+      "command_template": [
+        "hping3",
+        "--flood",
+        "{flags}",
+        "{scan_target}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/hping3.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "hping3",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://man.he.net/man8/hping3",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "hydra",
+    "display_name": "THC Hydra",
+    "kind": "network_attacker",
+    "phase": [
+      "attack_execution"
+    ],
+    "supported_target": [
+      "protocol",
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "hydra"
+      ],
+      "command_template": [
+        "hydra",
+        "-l",
+        "{user}",
+        "-P",
+        "{wordlist}",
+        "-o",
+        "{report}",
+        "{scan_target}",
+        "ssh"
+      ]
+    },
+    "params_schema_ref": "schemas/params/hydra.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "hydra",
+        "-h"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://github.com/vanhauser-thc/thc-hydra",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "sshpass",
+    "display_name": "sshpass (post-auth exec)",
+    "kind": "network_attacker",
+    "phase": [
+      "attack_execution"
+    ],
+    "supported_target": [
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "sshpass"
+      ],
+      "command_template": [
+        "sshpass",
+        "-p",
+        "{password}",
+        "ssh",
+        "{user}@{scan_target}",
+        "{remote_cmd}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/sshpass.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "sshpass",
+        "-V"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://linux.die.net/man/1/sshpass",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "curl",
+    "display_name": "curl (web injection)",
+    "kind": "network_attacker",
+    "phase": [
+      "attack_execution"
+    ],
+    "supported_target": [
+      "protocol",
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "curl"
+      ],
+      "command_template": [
+        "curl",
+        "-s",
+        "-o",
+        "{report}",
+        "-d",
+        "{payload}",
+        "{scan_target}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/curl.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "curl",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://curl.se/docs/manpage.html",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "ffuf",
+    "display_name": "ffuf (web fuzz/enum)",
+    "kind": "network_scanner",
+    "phase": [
+      "recon"
+    ],
+    "supported_target": [
+      "protocol",
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "ffuf"
+      ],
+      "command_template": [
+        "ffuf",
+        "-u",
+        "{scan_target}/FUZZ",
+        "-w",
+        "{wordlist}",
+        "-o",
+        "{report}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/ffuf.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "ffuf",
+        "-V"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://github.com/ffuf/ffuf",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "netcat",
+    "display_name": "netcat (raw socket inject)",
+    "kind": "network_attacker",
+    "phase": [
+      "attack_execution"
+    ],
+    "supported_target": [
+      "protocol",
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "nc"
+      ],
+      "command_template": [
+        "nc",
+        "{scan_target}",
+        "{port}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/netcat.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target",
+      "pov_input"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "nc",
+        "-h"
+      ]
+    },
+    "timeout_sec_default": 600,
+    "resource_limits": {
+      "cpu": 2,
+      "memory_mb": 4096,
+      "disk_mb": 8192
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://man.openbsd.org/nc.1",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "mavlink_signing",
+    "display_name": "MAVLink2 message signing",
+    "kind": "config_hardener",
+    "phase": [
+      "hardening"
+    ],
+    "supported_target": [
+      "protocol"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "python"
+      ],
+      "command_template": [
+        "python",
+        "{toolset_root}/scripts/mavlink/signing.py",
+        "--conn",
+        "{mav_endpoint}",
+        "--key",
+        "{sign_key}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/mavlink_signing.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "python",
+        "-c",
+        "import pymavlink"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://mavlink.io/en/guide/message_signing.html",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "ardupilot_param_harden",
+    "display_name": "ArduPilot parameter hardening",
+    "kind": "config_hardener",
+    "phase": [
+      "hardening"
+    ],
+    "supported_target": [
+      "protocol"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "python"
+      ],
+      "command_template": [
+        "python",
+        "{toolset_root}/scripts/mavlink/param_harden.py",
+        "--conn",
+        "{mav_endpoint}",
+        "--set",
+        "{param_kv_json}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/ardupilot_param_harden.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "python",
+        "-c",
+        "import pymavlink"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://ardupilot.org/copter/docs/parameters.html",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "sshd_harden",
+    "display_name": "SSH hardening (sshd_config)",
+    "kind": "config_hardener",
+    "phase": [
+      "hardening"
+    ],
+    "supported_target": [
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "sshpass"
+      ],
+      "command_template": [
+        "sshpass",
+        "-p",
+        "{password}",
+        "ssh",
+        "{user}@{scan_target}",
+        "{harden_cmd}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/sshd_harden.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "ssh",
+        "-V"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://man.openbsd.org/sshd_config",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "fail2ban",
+    "display_name": "fail2ban",
+    "kind": "config_hardener",
+    "phase": [
+      "hardening"
+    ],
+    "supported_target": [
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "fail2ban-client"
+      ],
+      "command_template": [
+        "fail2ban-client",
+        "set",
+        "{jail}",
+        "addaction",
+        "{action}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/fail2ban.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "fail2ban-client",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://www.fail2ban.org/",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "iptables",
+    "display_name": "iptables/nftables",
+    "kind": "config_hardener",
+    "phase": [
+      "hardening"
+    ],
+    "supported_target": [
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "iptables"
+      ],
+      "command_template": [
+        "iptables",
+        "{rule_spec}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/iptables.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "iptables",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://man7.org/linux/man-pages/man8/iptables.8.html",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "suricata",
+    "display_name": "Suricata (IDS rule)",
+    "kind": "ids_rule_validator",
+    "phase": [
+      "ids_validation"
+    ],
+    "supported_target": [
+      "protocol",
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "suricata"
+      ],
+      "command_template": [
+        "suricata",
+        "-r",
+        "{pcap}",
+        "-S",
+        "{rules_file}",
+        "-l",
+        "{out_dir}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/suricata.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target",
+      "pov_input"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "suricata",
+        "--build-info"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://docs.suricata.io/",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "snort",
+    "display_name": "Snort (IDS rule)",
+    "kind": "ids_rule_validator",
+    "phase": [
+      "ids_validation"
+    ],
+    "supported_target": [
+      "protocol",
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "snort"
+      ],
+      "command_template": [
+        "snort",
+        "-r",
+        "{pcap}",
+        "-c",
+        "{rules_file}",
+        "-A",
+        "console"
+      ]
+    },
+    "params_schema_ref": "schemas/params/snort.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target",
+      "pov_input"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "snort",
+        "-V"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://docs.snort.org/",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "tcpdump",
+    "display_name": "tcpdump",
+    "kind": "tracer",
+    "phase": [
+      "runtime_trace"
+    ],
+    "supported_target": [
+      "protocol",
+      "generic"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "tcpdump"
+      ],
+      "command_template": [
+        "tcpdump",
+        "-i",
+        "{iface}",
+        "-w",
+        "{pcap}",
+        "{filter}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/tcpdump.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "trace_log"
+    ],
+    "availability_probe": {
+      "command": [
+        "tcpdump",
+        "--version"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://www.tcpdump.org/manpages/tcpdump.1.html",
+    "priority": "P2"
+  },
+  {
+    "tool_id": "failsafe_trigger",
+    "display_name": "Failsafe/RTL trigger",
+    "kind": "config_hardener",
+    "phase": [
+      "hardening"
+    ],
+    "supported_target": [
+      "protocol"
+    ],
+    "execution": {
+      "mode": "host",
+      "entrypoint": [
+        "python"
+      ],
+      "command_template": [
+        "python",
+        "{toolset_root}/scripts/mavlink/failsafe.py",
+        "--conn",
+        "{mav_endpoint}",
+        "--action",
+        "{rtl_or_land}"
+      ]
+    },
+    "params_schema_ref": "schemas/params/failsafe_trigger.schema.json",
+    "output_schema_ref": "schemas/tool_result.schema.json",
+    "required_artifacts": [
+      "scan_target"
+    ],
+    "produced_artifacts": [
+      "report"
+    ],
+    "availability_probe": {
+      "command": [
+        "python",
+        "-c",
+        "import pymavlink"
+      ]
+    },
+    "timeout_sec_default": 300,
+    "resource_limits": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096
+    },
+    "security_profile": {
+      "network": "sandbox",
+      "write_scope": "workspace_artifacts_only"
+    },
+    "evidence_policy": {
+      "capture_stdout": true,
+      "capture_stderr": true,
+      "capture_exit_code": true,
+      "capture_artifact_hash": true
+    },
+    "docs_url": "https://ardupilot.org/copter/docs/radio-failsafe.html",
+    "priority": "P2"
+  }
+]

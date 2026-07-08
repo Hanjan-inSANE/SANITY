@@ -1,0 +1,37 @@
+# ===================================================================
+# 6. LLM Gateway — LiteLLM 프록시 설정
+# 이 파일이 "AI 쓰러 나가는 창구"의 규칙표다.
+# 문법 근거: AIxCC 결승 Buttercup / Artiphishell 실제 설정.
+# 설계 근거: SANITY_6_7_설계명세_LLMGateway_Log.md §2.3, 부록 A
+# ===================================================================
+
+# ⚠ 현재 설정: 모든 에이전트(TM·Attacker·Defender) = Ollama Cloud Gemma.
+#    별칭(sane-*)만 Gemma로 재지정 → 에이전트 코드 무변경으로 전 컴포넌트가 Gemma 사용.
+#    Ollama Cloud는 OpenAI 호환 엔드포인트(https://ollama.com/v1) + 베어러 키(OLLAMA_CLOUD_API_KEY).
+#    ⚠ 모델 태그 확인(V-GW-0): 아래 gemma3:4b 를 '당신 Ollama Cloud 계정이 pull 가능한 정확한 태그'로
+#      교체(예: gemma3:4b / gemma3:12b / gemma3:27b). 계정 모델 목록/`ollama list`로 확인 후 정정.
+model_list:
+  # ---- 전 에이전트 공통: Ollama Cloud Gemma (별칭 3개 모두 동일 모델) ----
+  - model_name: sane-sonnet                 # 기본 작업마 (= Gemma)
+    litellm_params: { model: openai/gemma3:4b, api_base: os.environ/OLLAMA_CLOUD_BASE_URL, api_key: os.environ/OLLAMA_CLOUD_API_KEY }
+  - model_name: sane-opus                    # 고난도용(현재는 동일 Gemma)
+    litellm_params: { model: openai/gemma3:4b, api_base: os.environ/OLLAMA_CLOUD_BASE_URL, api_key: os.environ/OLLAMA_CLOUD_API_KEY }
+  - model_name: sane-haiku                   # 경량용(현재는 동일 Gemma)
+    litellm_params: { model: openai/gemma3:4b, api_base: os.environ/OLLAMA_CLOUD_BASE_URL, api_key: os.environ/OLLAMA_CLOUD_API_KEY }
+
+  # ---- (선택) grounding 보조. 현재 Gemma 통일 ----
+  - model_name: sane-ground
+    litellm_params: { model: openai/gemma3:4b, api_base: os.environ/OLLAMA_CLOUD_BASE_URL, api_key: os.environ/OLLAMA_CLOUD_API_KEY }
+
+  # ---- 폴백(대타) 티어. Gemma 통일 실험이면 미사용(cfg.gateway_models에서 제외) ----
+  - model_name: sane-oai-fallback            # (선택) OpenAI 호환 폴백
+    litellm_params: { model: openai/gpt-4.1, api_base: os.environ/OPENAI_BASE_URL, api_key: os.environ/OPENAI_API_KEY }
+
+litellm_settings:
+  num_retries: 2            # 전송 실패 시 프록시가 다시 시도하는 횟수 (여기 한 곳에서만)
+  request_timeout: 600      # 600초 기다려도 답 없으면 포기
+  drop_params: true         # ⚠ Gemma(OSS)는 일부 OpenAI 파라미터 미지원 → true로 조용히 드롭(호출 실패 방지)
+
+general_settings:
+  master_key: os.environ/SANITY_LITELLM_MASTER_KEY   # 관리자 마스터키(선불카드 발급용). 예산담당자만 사용
+  database_url: os.environ/DATABASE_URL              # 선불카드/예산을 저장할 Postgres 주소

@@ -1,0 +1,12 @@
+diff --git a/vuln.c b/vuln.c
+--- a/vuln.c
++++ b/vuln.c
+@@ -11,7 +11,7 @@ int main(void) {
+         return 0;
+     }
+ 
+-    strcpy(buffer, input);
++    snprintf(buffer, sizeof(buffer), "%s", input);
+     printf("%s", buffer);
+     return 0;
+ }

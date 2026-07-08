@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dah.local/toolset/schemas/artifacts.schema.json",
+  "title": "Toolset Artifact Models",
+  "type": "object",
+  "required": ["artifact_type", "artifact_id"],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "enum": [
+        "ChallengeBundle",
+        "TargetProfile",
+        "BuildArtifact",
+        "HarnessArtifact",
+        "FuzzJob",
+        "CrashReport",
+        "PoV",
+        "DebugTrace",
+        "RuntimeTrace",
+        "SanitizerReport",
+        "CoverageReport",
+        "PatchArtifact",
+        "TestResult",
+        "DefenseEvidenceBundle"
+      ]
+    },
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_refs": {"type": "array", "items": {"type": "string", "pattern": "^artifact://"}},
+    "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "metadata": {"type": "object"}
+  },
+  "additionalProperties": true
+}

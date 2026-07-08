@@ -1,0 +1,27 @@
+# ===================================================================
+# A. 데모(관측) 오버레이 — 구현/스펙은 그대로 두고 "포트만" 연다.
+# 평소:   docker compose --env-file .env up -d                      (격리 유지)
+# 관측시: docker compose -f docker-compose.yml -f docker-compose.demo.yml --env-file .env up -d
+#
+# ⚠ 이 파일은 SR-SEC-02 격리를 일부 완화한다. 로컬 데모 전용. 대회 실환경에선 쓰지 말 것.
+# 효과: target-sitl-a/b 의 MAVLink 포트를 호스트로 노출 → QGroundControl로 드론 상태를 눈으로 본다.
+# ===================================================================
+
+services:
+  # 공격용 SITL: QGroundControl을 TCP 127.0.0.1:5760 로 붙인다.
+  target-sitl-a:
+    networks: [target, demo]        # 격리망(target) 유지 + 관측용 브리지(demo) 추가
+    ports:
+      - "5760:5760/tcp"             # ArduPilot SITL 기본 MAVLink(TCP)
+      - "14550:14550/udp"           # GCS 방송(UDP) — QGC 자동연결
+
+  # 방어검증용 SITL(2번째 인스턴스): QGC를 TCP 127.0.0.1:5761 로 붙인다.
+  target-sitl-b:
+    networks: [target, demo]
+    ports:
+      - "5761:5760/tcp"
+      - "14551:14550/udp"
+
+networks:
+  demo:                             # 관측 전용 브리지(외부 접근 가능). target(internal)과 분리.
+    name: sanity-demo

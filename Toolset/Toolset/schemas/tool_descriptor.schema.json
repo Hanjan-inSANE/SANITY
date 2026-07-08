@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dah.local/toolset/schemas/tool_descriptor.schema.json",
+  "title": "ToolDescriptor v1",
+  "type": "object",
+  "required": [
+    "tool_id",
+    "display_name",
+    "kind",
+    "phase",
+    "supported_target",
+    "execution",
+    "params_schema_ref",
+    "output_schema_ref",
+    "required_artifacts",
+    "produced_artifacts",
+    "availability_probe",
+    "timeout_sec_default",
+    "resource_limits",
+    "security_profile",
+    "evidence_policy"
+  ],
+  "properties": {
+    "tool_id": {"type": "string", "pattern": "^[a-zA-Z0-9_.-]+$"},
+    "display_name": {"type": "string", "minLength": 1},
+    "kind": {
+      "type": "string",
+      "enum": [
+        "builder",
+        "test_runner",
+        "fuzzer",
+        "debugger",
+        "tracer",
+        "sanitizer",
+        "coverage",
+        "static_analyzer",
+        "patcher",
+        "config_hardener",
+        "ids_rule_validator",
+        "reporter",
+        "network_scanner",
+        "network_attacker"
+      ]
+    },
+    "phase": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "supported_target": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "execution": {
+      "type": "object",
+      "required": ["mode", "entrypoint", "command_template"],
+      "properties": {
+        "mode": {"type": "string", "enum": ["host", "container", "internal"]},
+        "image": {"type": "string"},
+        "entrypoint": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "command_template": {"type": "array", "items": {"type": "string"}, "minItems": 1}
+      },
+      "additionalProperties": true
+    },
+    "params_schema_ref": {"type": "string"},
+    "output_schema_ref": {"type": "string"},
+    "required_artifacts": {"type": "array", "items": {"type": "string"}},
+    "produced_artifacts": {"type": "array", "items": {"type": "string"}},
+    "availability_probe": {
+      "type": "object",
+      "required": ["command"],
+      "properties": {
+        "command": {"type": "array", "items": {"type": "string"}, "minItems": 1}
+      }
+    },
+    "timeout_sec_default": {"type": "integer", "minimum": 1},
+    "resource_limits": {
+      "type": "object",
+      "required": ["cpu", "memory_mb", "disk_mb"],
+      "properties": {
+        "cpu": {"type": "number", "minimum": 0.1},
+        "memory_mb": {"type": "integer", "minimum": 64},
+        "disk_mb": {"type": "integer", "minimum": 64}
+      }
+    },
+    "security_profile": {
+      "type": "object",
+      "required": ["network", "write_scope"],
+      "properties": {
+        "network": {"type": "string", "enum": ["disabled", "loopback", "sandbox"]},
+        "write_scope": {"type": "string", "enum": ["workspace_artifacts_only"]}
+      }
+    },
+    "evidence_policy": {
+      "type": "object",
+      "required": ["capture_stdout", "capture_stderr", "capture_exit_code", "capture_artifact_hash"],
+      "properties": {
+        "capture_stdout": {"type": "boolean"},
+        "capture_stderr": {"type": "boolean"},
+        "capture_exit_code": {"type": "boolean"},
+        "capture_artifact_hash": {"type": "boolean"}
+      }
+    },
+    "docs_url": {"type": "string"},
+    "priority": {"type": "string", "enum": ["P0", "P1", "P2", "P3"]}
+  },
+  "additionalProperties": true
+}

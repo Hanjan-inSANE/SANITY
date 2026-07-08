@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "threat_modeler",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "threat_modeler", "serve", "--no-browser", "--port", "8150"],
+      "port": 8150
+    }
+  ]
+}

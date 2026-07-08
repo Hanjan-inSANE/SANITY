@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sanity"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "pydantic>=2.6", "redis>=5.0", "langgraph>=0.2", "langchain-core>=0.3",
+  "openai>=1.30", "requests>=2.31",         # 6/7(gateway_log)이 쓰는 런타임
+  "mcp>=1.0",                               # Toolset MCP (stdio/HTTP)
+]
+# 6/7은 PyPI 패키지가 아니라 로컬 경로 의존 → editable로 먼저 설치(아래 참조). dependencies에 이름으로 넣지 않는다
+# (그래야 `pip install -e .` 이 PyPI에서 못 찾아 실패하는 일이 없다).
+#
+# 설치 순서(고정, 각 Dockerfile·CI 동일, §00-1):
+#   1) pip install -e ./gateway_log     → sanity_llm / sanity_log 제공(6/7)
+#   2) pip install -e ./threat_modeler     → threat_modeler 제공(위협모델러 1; 자체 pyproject 로 import명 매핑)
+#   3) pip install -e .                 → sanity_common / sanity_scenario_manager / sanity_attacker /
+#                                         sanity_defender / sanity_infra
+# threat_modeler 는 (2)에서 별도 설치되므로 이 루트 프로젝트의 패키지 목록에는 넣지 않는다(이중정의 방지).
+[tool.setuptools.packages.find]
+include = ["sanity_common*", "sanity_scenario_manager*", "sanity_attacker*", "sanity_defender*", "sanity_infra*"]
