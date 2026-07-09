@@ -19,7 +19,11 @@ services:
       - "../tools:/app/tools:ro"
     networks: [control]
   control-ui:
-    image: sanity-scenario-manager
+    # 이미지 이름 의존 제거: SM과 동일한 Dockerfile로 자체 빌드(환경별 compose 프로젝트명/수동빌드 불일치 회피).
+    # control.py 는 아래 볼륨 마운트(../tools)로 주입되므로 command 만 바꿔 쓴다.
+    build:
+      context: ..
+      dockerfile: sanity_scenario_manager/Dockerfile
     network_mode: host
     command: ["python3", "/app/tools/control.py"]
     environment:

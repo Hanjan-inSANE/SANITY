@@ -13,30 +13,30 @@
 model_list:
   # ---- 전 에이전트 공통: Ollama Cloud Gemma (별칭 3개 모두 동일 모델) ----
   - model_name: sane-sonnet                 # 기본 작업마 (= Gemma)
-    litellm_params: { model: openai/gemma4:31b, api_base: os.environ/OLLAMA_CLOUD_BASE_URL, api_key: os.environ/OLLAMA_CLOUD_API_KEY }
+    litellm_params: { model: openai/gpt-4.1-mini, api_base: https://api.openai.com/v1, api_key: os.environ/OPENAI_API_KEY }
   - model_name: sane-opus                    # 고난도용(현재는 동일 Gemma)
-    litellm_params: { model: openai/gemma4:31b, api_base: os.environ/OLLAMA_CLOUD_BASE_URL, api_key: os.environ/OLLAMA_CLOUD_API_KEY }
+    litellm_params: { model: openai/gpt-4.1-mini, api_base: https://api.openai.com/v1, api_key: os.environ/OPENAI_API_KEY }
   - model_name: sane-haiku                   # 경량용(현재는 동일 Gemma)
-    litellm_params: { model: openai/gemma4:31b, api_base: os.environ/OLLAMA_CLOUD_BASE_URL, api_key: os.environ/OLLAMA_CLOUD_API_KEY }
+    litellm_params: { model: openai/gpt-4.1-mini, api_base: https://api.openai.com/v1, api_key: os.environ/OPENAI_API_KEY }
 
   # ---- (선택) grounding 보조. 현재 Gemma 통일 ----
   - model_name: sane-ground
-    litellm_params: { model: openai/gemma4:31b, api_base: os.environ/OLLAMA_CLOUD_BASE_URL, api_key: os.environ/OLLAMA_CLOUD_API_KEY }
+    litellm_params: { model: openai/gpt-4.1-mini, api_base: https://api.openai.com/v1, api_key: os.environ/OPENAI_API_KEY }
 
   # ---- 폴백(대타) 티어. Gemma 통일 실험이면 미사용(cfg.gateway_models에서 제외) ----
   - model_name: sane-oai-fallback            # (선택) OpenAI 호환 폴백
     litellm_params: { model: openai/gpt-4.1, api_base: os.environ/OPENAI_BASE_URL, api_key: os.environ/OPENAI_API_KEY }
 
   - model_name: sane-local
-    litellm_params: { model: openai/gemma4:31b, api_base: os.environ/OLLAMA_CLOUD_BASE_URL, api_key: os.environ/OLLAMA_CLOUD_API_KEY }
+    litellm_params: { model: openai/gpt-4.1-mini, api_base: https://api.openai.com/v1, api_key: os.environ/OPENAI_API_KEY }
   - model_name: sane-opus                    # 고난도용(현재는 동일 Gemma)
-    litellm_params: { model: openai/gemma4:31b, api_base: os.environ/OLLAMA_CLOUD_BASE_URL, api_key: os.environ/OLLAMA_CLOUD_API_KEY }
+    litellm_params: { model: openai/gpt-4.1-mini, api_base: https://api.openai.com/v1, api_key: os.environ/OPENAI_API_KEY }
   - model_name: sane-haiku                   # 경량용(현재는 동일 Gemma)
-    litellm_params: { model: openai/gemma4:31b, api_base: os.environ/OLLAMA_CLOUD_BASE_URL, api_key: os.environ/OLLAMA_CLOUD_API_KEY }
+    litellm_params: { model: openai/gpt-4.1-mini, api_base: https://api.openai.com/v1, api_key: os.environ/OPENAI_API_KEY }
 
   # ---- (선택) grounding 보조. 현재 Gemma 통일 ----
   - model_name: sane-ground
-    litellm_params: { model: openai/gemma4:31b, api_base: os.environ/OLLAMA_CLOUD_BASE_URL, api_key: os.environ/OLLAMA_CLOUD_API_KEY }
+    litellm_params: { model: openai/gpt-4.1-mini, api_base: https://api.openai.com/v1, api_key: os.environ/OPENAI_API_KEY }
 
   # ---- 폴백(대타) 티어. Gemma 통일 실험이면 미사용(cfg.gateway_models에서 제외) ----
   - model_name: sane-oai-fallback            # (선택) OpenAI 호환 폴백

@@ -92,6 +92,8 @@ def connect():
             m = mavutil.mavlink_connection(ep, source_system=245, source_component=190)
             m.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS, mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
             if m.wait_heartbeat(timeout=5) is not None:
+                if not m.target_system:
+                    m.target_system = 1
                 m.target_component = 1
                 return m, ep
             m.close()
@@ -136,8 +138,11 @@ def act(m, action, p):
         m.mav.param_set_send(ts, tc, str(p["name"]).encode(), float(p["value"]),
                              mavutil.mavlink.MAV_PARAM_TYPE_REAL32)
     elif action == "command_long":
-        a = [float(p.get(f"p{i}", 0)) for i in range(1, 8)]
-        m.mav.command_long_send(ts, tc, int(p.get("command", 0)), 0, *a)
+        a = [float(p.get(f"p{i}", 0) or 0) for i in range(1, 8)]
+        cmd = p.get("command", 0)
+        if isinstance(cmd, str):
+            cmd = int(cmd) if cmd.isdigit() else getattr(mavutil.mavlink, cmd, 0)
+        m.mav.command_long_send(ts, tc, int(cmd or 0), 0, *a)
     ack = m.recv_match(type="COMMAND_ACK", blocking=True, timeout=2)
     if ack: r["ack_accepted"] = (ack.result == mavutil.mavlink.MAV_RESULT_ACCEPTED)
     return r
@@ -208,11 +213,15 @@ def main():
                 log({"ts": time.time(), "component": "3", "event_type": "status", "state": "FAIL", "scope_id": scope,
                      "note": "no feasible tool", "rationale": sel.get("rationale")})
                 print(f"  {tn}: no tool -> FAIL"); continue
-            before = state(m)
-            actr = act(m, tool["action"], sel.get("params") or {})
-            time.sleep(1.0)
-            after = state(m)
-            success, reason = oracle(tool["intent"], before, after, actr)
+            try:
+                before = state(m)
+                actr = act(m, tool["action"], sel.get("params") or {})
+                time.sleep(1.0)
+                after = state(m)
+                success, reason = oracle(tool["intent"], before, after, actr)
+            except Exception as _ex:
+                before, after, actr = {}, {}, {}
+                success, reason = False, f"exec error: {_ex}"
             if success: ok += 1
             log({"ts": time.time(), "component": "3", "event_type": "status",
                  "state": "SUCCESS" if success else "FAIL", "scope_id": scope,
