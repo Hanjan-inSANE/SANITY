@@ -52,7 +52,7 @@ SANITY/
 ├── Toolset/Toolset/          # 8. Toolset (MCP 서버·레지스트리·어댑터·mavlink/net 스크립트)
 ├── deploy/                   # docker-compose(+override/demo) · .env.example
 ├── tools/                    # viewer.py(관측), control.py(제어 GUI), sanity_dvd_attack.py(실물 DVD 드라이버)
-├── docs/                     # QUICKSTART · RUN_NOW · FIXLOG
+├── docs/                     # RUN_NOW (자율공방 실행)
 ├── tests/                    # 통합 테스트
 ├── index.html                # threat_modeler 웹 UI
 ├── DVD.openxsampp.xml         # DVD 시스템 모델(OpenXSAM++)
