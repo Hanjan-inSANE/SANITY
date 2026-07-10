@@ -1,0 +1,32 @@
+# SANITY — third-party runtime dependencies
+#
+# 로컬 모노레포 패키지(sanity_common, sanity_llm, sanity_log, threat_modeler,
+# sanity_scenario_manager, sanity_attacker, sanity_defender, sanity_infra)는
+# editable 설치로 별도 설치한다:
+#   pip install -e ./gateway_log
+#   pip install -e ./threat_modeler
+#   pip install -e .
+# 이 파일은 위 패키지들이 요구하는 서드파티 의존을 한곳에 모은 참조용이다.
+
+# --- Core (sanity_common / scenario_manager / attacker / defender / infra) ---
+pydantic>=2.6
+redis>=5.0
+langgraph>=0.2
+langchain-core>=0.3
+openai>=1.30
+requests>=2.31
+mcp>=1.0
+
+# --- Scenario Manager: 에이전트 동적 스폰 + Toolset 레지스트리 파싱 ---
+docker>=7.0
+PyYAML>=6.0
+
+# --- Toolset MAVLink 도구 + 실물 DVD 공격 드라이버(tools/sanity_dvd_attack.py) ---
+pymavlink>=2.4
+
+# --- Threat modeler: LLM 제공자 (사용하는 것만 설치) ---
+anthropic>=0.30        # Anthropic 제공자 직접 사용 시
+# openai (위 core에 포함) — OpenAI 호환/게이트웨이 사용 시
+
+# --- Threat modeler: 공격트리 PNG 내보내기 (선택) ---
+cairosvg>=2.7
