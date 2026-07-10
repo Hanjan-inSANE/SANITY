@@ -16,7 +16,7 @@ Flow per leaf node:
 
 Run inside a container on the host network with the sanity-logs volume mounted (see command given).
 Env: LITELLM_API_BASE, SANITY_LITELLM_MASTER_KEY, SANITY_GATEWAY_MODEL, REDIS_URL_STATE,
-     SANITY_LOG_DIR, SANITY_MAV_ENDPOINT(optional hint).
+     SANITY_LOG_DIR, SANITY_MAV_ENDPOINT(optional hint), SANITY_TREE_ID(optional exact tree).
 """
 import os, sys, json, time, uuid, urllib.request
 
@@ -26,6 +26,7 @@ MODEL   = os.getenv("SANITY_GATEWAY_MODEL", "sane-sonnet")
 STATE   = os.getenv("REDIS_URL_STATE", "redis://127.0.0.1:6379/1")
 LOGDIR  = os.getenv("SANITY_LOG_DIR", "/logs")
 MAVHINT = os.getenv("SANITY_MAV_ENDPOINT", "10.13.0.3:14550")
+TREE_ID = os.getenv("SANITY_TREE_ID", "").strip()
 
 # ---- generic tool inventory shown to the attacker (NO DVD-specific wording) ----
 TOOLS = [
@@ -59,7 +60,12 @@ def llm_json(system, user):
             headers={"Authorization": f"Bearer {_vkey()}", "Content-Type": "application/json"})
     txt = json.load(urllib.request.urlopen(req, timeout=120))["choices"][0]["message"]["content"]
     s = txt.find("{"); e = txt.rfind("}")
-    return json.loads(txt[s:e+1]) if s >= 0 and e > s else {}
+    if s >= 0 and e > s:
+        try:
+            return json.loads(txt[s:e+1])
+        except Exception:
+            pass
+    return {}
 
 SELECT_SYS = (
     "You are an autonomous UxV attack agent. You are given ONE attack-tree node (an attacker sub-goal) "
@@ -73,7 +79,7 @@ SELECT_SYS = (
 
 # =============================================================== MAVLink (real)
 from pymavlink import mavutil
-_CANDS = [MAVHINT, "udpout:10.13.0.3:14550", "udpout:10.13.0.3:14540", "udpout:10.13.0.3:14551",
+_CANDS = [MAVHINT, "tcp:10.13.0.3:5760", "udpout:10.13.0.3:14550", "udpout:10.13.0.3:14540", "udpout:10.13.0.3:14551",
           "udpout:10.13.0.3:17910", "udpout:10.13.0.3:17911", "udpout:10.13.0.3:17912",
           "udpout:10.13.0.3:17913", "tcp:10.13.0.2:5760"]
 
@@ -81,6 +87,18 @@ def _norm(ep):
     if "://" not in ep and ":" in ep and not ep.startswith(("udp", "tcp")):
         return "udpout:" + ep
     return ep
+
+def _is_vehicle_heartbeat(msg):
+    return (
+        msg is not None
+        and msg.get_type() == "HEARTBEAT"
+        and int(getattr(msg, "type", -1)) not in (
+            mavutil.mavlink.MAV_TYPE_GCS,
+            mavutil.mavlink.MAV_TYPE_ONBOARD_CONTROLLER,
+        )
+        and int(getattr(msg, "autopilot", mavutil.mavlink.MAV_AUTOPILOT_INVALID))
+            != mavutil.mavlink.MAV_AUTOPILOT_INVALID
+    )
 
 def connect():
     seen = []
@@ -91,9 +109,19 @@ def connect():
         try:
             m = mavutil.mavlink_connection(ep, source_system=245, source_component=190)
             m.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS, mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
-            if m.wait_heartbeat(timeout=5) is not None:
-                if not m.target_system:
-                    m.target_system = 1
+            end = time.time() + 10
+            while time.time() < end:
+                msg = m.recv_match(type="HEARTBEAT", blocking=True, timeout=1)
+                if _is_vehicle_heartbeat(msg):
+                    m.target_system = msg.get_srcSystem()
+                    m.target_component = msg.get_srcComponent() or 1
+                    m.mav.srcSystem = 245
+                    m.mav.srcComponent = 190
+                    return m, ep
+            if ep.startswith("tcp:"):
+                # DVD Lite sometimes forwards a GCS heartbeat first. Use the
+                # ArduPilot default only after giving vehicle heartbeat time.
+                m.target_system = 1
                 m.target_component = 1
                 return m, ep
             m.close()
@@ -108,6 +136,8 @@ def state(m, settle=1.5):
         if not msg: break
         t = msg.get_type()
         if t == "HEARTBEAT":
+            if msg.get_srcSystem() != m.target_system:
+                continue
             st["armed"] = bool(msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
             try: st["mode"] = m.flightmode
             except Exception: pass
@@ -185,7 +215,14 @@ def leaves(node, out):
 def main():
     import redis
     r = redis.Redis.from_url(STATE, decode_responses=True)
-    trees = {k.split("st:tree:", 1)[1]: json.loads(r.get(k)) for k in r.scan_iter("st:tree:*")}
+    if TREE_ID:
+        raw = r.get(f"st:tree:{TREE_ID}")
+        if not raw:
+            print(f"no attack tree in redis: st:tree:{TREE_ID}")
+            return
+        trees = {TREE_ID: json.loads(raw)}
+    else:
+        trees = {k.split("st:tree:", 1)[1]: json.loads(r.get(k)) for k in r.scan_iter("st:tree:*")}
     if not trees:
         print("no attack trees in redis (run the threat modeler first)."); return
     m, ep = connect()

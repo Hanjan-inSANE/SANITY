@@ -436,6 +436,6 @@ def assemble(
         "dfdPaths": dfd_paths or [],
     }
     return call_and_parse(
-        api_key, model, _ASSEMBLER_SYSTEM, json.dumps(payload), max_tokens=8192,
+        api_key, model, _ASSEMBLER_SYSTEM, json.dumps(payload), max_tokens=16000,
         provider=provider, base_url=base_url,
     )

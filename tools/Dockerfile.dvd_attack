@@ -1,0 +1,9 @@
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1
+
+RUN pip install --no-cache-dir pymavlink redis
+
+COPY tools/sanity_dvd_attack.py /t/sanity_dvd_attack.py
+
+CMD ["python", "/t/sanity_dvd_attack.py"]

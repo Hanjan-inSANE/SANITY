@@ -171,21 +171,23 @@ $ python3 -m pytest Toolset/Toolset/tests/test_golden_contract.py -q
 
 ---
 
-## STEP 8 — DVD + SANITY 전체 올리기 (5분)
+## STEP 8 — SANITY target + 관측 포트 올리기 (5분)
 
-**드론을 눈으로 볼 거면 (권장)** — 관측 오버레이까지 함께:
+**QGC 연결 확인용 내장 target을 볼 거면 (권장)** — 관측 오버레이까지 함께:
 ```
 $ cd deploy
 $ docker compose -f docker-compose.yml -f docker-compose.demo.yml --env-file .env up -d
 ```
 (격리만 유지하고 볼 필요 없으면 `docker compose --env-file .env up -d`)
 
+> 주의: 현재 `target-sitl-a/b`는 QGC와 SANITY 기본 probe를 위한 MAVLink smoke target입니다. 실제 Damn Vulnerable Drone/ArduPilot SITL은 아직 내장되어 있지 않으므로, 실제 DVD 실험은 `docs/FIXLOG.md`의 "DVD (별도)" 절차로 별도 기동해야 합니다.
+
 상태 확인:
 ```
 $ docker compose ps
-$ docker compose logs target-sitl-a | tail    # ArduPilot SITL(=DVD) 부팅 로그
+$ docker compose logs target-sitl-a | tail    # MAVLink smoke target 부팅 로그
 ```
-**✅ 이게 보이면 성공:** 모든 서비스 `running`, `target-sitl-a` 부팅 로그가 보임.
+**✅ 이게 보이면 성공:** 모든 서비스 `running`, `target-sitl-a`에 `[target] MAVLink smoke target listening ...` 로그가 보임.
 
 ---
 

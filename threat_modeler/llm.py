@@ -235,23 +235,57 @@ def _strip_trailing_commas(t: str) -> str:
     return re.sub(r",(\s*[}\]])", r"\1", t)
 
 
+def _balanced_json_slices(text: str) -> List[str]:
+    """Return balanced top-level JSON object/array slices found in text."""
+    out: List[str] = []
+    pairs = {"{": "}", "[": "]"}
+    for start, ch in enumerate(text):
+        if ch not in pairs:
+            continue
+        stack = [pairs[ch]]
+        in_string = False
+        escaped = False
+        for pos in range(start + 1, len(text)):
+            cur = text[pos]
+            if in_string:
+                if escaped:
+                    escaped = False
+                elif cur == "\\":
+                    escaped = True
+                elif cur == '"':
+                    in_string = False
+                continue
+            if cur == '"':
+                in_string = True
+            elif cur in pairs:
+                stack.append(pairs[cur])
+            elif stack and cur == stack[-1]:
+                stack.pop()
+                if not stack:
+                    out.append(text[start : pos + 1])
+                    break
+    return out
+
+
 def extract_json(text: str) -> Any:
     """Extract and parse the first JSON object/array from model output."""
     t = (text or "").strip().replace("```json", "").replace("```JSON", "").replace("```", "")
-    starts = [i for i in (t.find("{"), t.find("[")) if i >= 0]
-    if not starts:
+    slices = _balanced_json_slices(t)
+    if not slices:
+        starts = [i for i in (t.find("{"), t.find("[")) if i >= 0]
+        ends = [i for i in (t.rfind("}"), t.rfind("]")) if i >= 0]
+        if starts and ends and max(ends) > min(starts):
+            slices = [t[min(starts) : max(ends) + 1]]
+    if not slices:
         raise LLMError("No JSON found in model output")
-    s = min(starts)
-    e = max(t.rfind("}"), t.rfind("]"))
-    if e > s:
-        t = t[s : e + 1]
     first_err: Optional[json.JSONDecodeError] = None
-    for candidate in (t, _strip_trailing_commas(t)):
-        try:
-            return json.loads(candidate)
-        except json.JSONDecodeError as exc:
-            if first_err is None:
-                first_err = exc
+    for item in slices:
+        for candidate in (item, _strip_trailing_commas(item)):
+            try:
+                return json.loads(candidate)
+            except json.JSONDecodeError as exc:
+                if first_err is None:
+                    first_err = exc
     raise LLMError(f"Model output was not valid JSON: {first_err}") from first_err
 
 
@@ -264,22 +298,28 @@ def call_and_parse(
     provider: str = ANTHROPIC,
     base_url: Optional[str] = None,
 ) -> Any:
-    """Call a model and parse a STRICT-JSON response, with one repair round."""
+    """Call a model and parse a STRICT-JSON response, with repair rounds."""
     messages: List[Dict[str, Any]] = [{"role": "user", "content": user}]
-    resp = call_model(api_key, provider, model, messages, system=system,
-                      max_tokens=max_tokens, base_url=base_url)
-    raw = text_of(resp)
-    try:
-        return extract_json(raw)
-    except LLMError as first_err:
+    last_err: Optional[LLMError] = None
+    for attempt in range(4):
+        resp = call_model(api_key, provider, model, messages, system=system,
+                          max_tokens=max_tokens, base_url=base_url)
+        raw = text_of(resp)
+        try:
+            return extract_json(raw)
+        except LLMError as exc:
+            last_err = exc
+        if attempt >= 3:
+            break
         truncated = getattr(resp, "stop_reason", None) == "max_tokens"
         hint = " Your previous reply was cut off; return a smaller but complete tree." if truncated else ""
-        messages.append({"role": "assistant", "content": raw or "(empty)"})
+        messages.append({"role": "assistant", "content": (raw or "(empty)")[:12000]})
         messages.append({"role": "user", "content": (
-            f"That was not valid JSON ({first_err}).{hint} "
-            "Reply with ONLY the corrected, strictly valid JSON: no prose, "
-            "no code fences, no comments, no trailing commas."
+            f"That was not valid JSON ({last_err}).{hint} "
+            "Regenerate the answer from the original task, not as an explanation. "
+            "Reply with ONLY one complete, strictly valid JSON value: no prose, "
+            "no code fences, no comments, no trailing commas. Escape all newline "
+            "characters inside strings as \\n. If the structure is too large, "
+            "make it smaller while preserving the root objective and concrete leaves."
         )})
-        resp2 = call_model(api_key, provider, model, messages, system=system,
-                           max_tokens=max_tokens, base_url=base_url)
-        return extract_json(text_of(resp2))
+    raise last_err or LLMError("Model output was not valid JSON")

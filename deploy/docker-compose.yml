@@ -64,11 +64,15 @@ services:
   target-sitl-a:                  # 9. Target: DVD SITL(로직 공격용) — 격리 네트워크
     build:
       context: ../sanity_infra/target
+    environment:
+      SYSID_THISMAV: "1"
     networks: [target]
 
   target-sitl-b:                  # 9. Target: DVD SITL(로직 방어검증용 2번째 인스턴스, §00-10)
     build:
       context: ../sanity_infra/target
+    environment:
+      SYSID_THISMAV: "2"
     networks: [target]
 
   scenario-manager:               # 2. Scenario Manager (트리당 1; Allocator가 에이전트 동적 스폰)
